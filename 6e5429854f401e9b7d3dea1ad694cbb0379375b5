@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f01d2b76_c2b5a06b",
+        "filename": "build.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1054468
+      },
+      "writtenOn": "2019-07-09T18:59:33Z",
+      "side": 1,
+      "message": "why a tarball?",
+      "range": {
+        "startLine": 16,
+        "startChar": 0,
+        "endLine": 16,
+        "endChar": 72
+      },
+      "revId": "6e5429854f401e9b7d3dea1ad694cbb0379375b5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0ad27940_d5f8db2c",
+        "filename": "config_toml.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1054468
+      },
+      "writtenOn": "2019-07-09T18:59:33Z",
+      "side": 1,
+      "message": "why not just \"w\"?",
+      "range": {
+        "startLine": 23,
+        "startChar": 48,
+        "endLine": 23,
+        "endChar": 50
+      },
+      "revId": "6e5429854f401e9b7d3dea1ad694cbb0379375b5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
