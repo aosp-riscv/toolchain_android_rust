@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "32ae30a4_288404c0",
+        "filename": "build.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 16,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2019-07-09T19:12:45Z",
+      "side": 1,
+      "message": "This creates a single build artifact to be downloaded/committed to prebuilts from the buildserver. Otherwise, we\u0027d need to write a script to talk to the build server and download every individual file in the resulting tree.\n\nSee https://android.googlesource.com/toolchain/llvm_android/+/refs/heads/master/update-prebuilts.py\nfor how the prebuilts are updated in LLVM (note specifically the use of clang_pattern \u003d \u0027clang-*.tar.bz2\u0027)",
+      "parentUuid": "f01d2b76_c2b5a06b",
+      "range": {
+        "startLine": 16,
+        "startChar": 0,
+        "endLine": 16,
+        "endChar": 72
+      },
+      "revId": "6e5429854f401e9b7d3dea1ad694cbb0379375b5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    },
+    {
+      "key": {
         "uuid": "0ad27940_d5f8db2c",
         "filename": "config_toml.py",
         "patchSetId": 3
@@ -45,6 +69,30 @@
       "revId": "6e5429854f401e9b7d3dea1ad694cbb0379375b5",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "00327120_5ff41bf1",
+        "filename": "config_toml.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2019-07-09T19:12:45Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0ad27940_d5f8db2c",
+      "range": {
+        "startLine": 23,
+        "startChar": 48,
+        "endLine": 23,
+        "endChar": 50
+      },
+      "revId": "6e5429854f401e9b7d3dea1ad694cbb0379375b5",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
