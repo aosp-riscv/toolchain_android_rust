@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 # Copyright (C) 2019 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,10 +16,12 @@
 """Creates a tarball suitable for use as a Rust prebuilt for Android."""
 
 import argparse
+import errno
 import glob
 import os
 import os.path
 import subprocess
+import sys
 
 import config_toml
 import paths
@@ -42,8 +44,16 @@ def main():
     dist_dir = os.environ['DIST_DIR']
 
     # Pre-create target directories
-    os.makedirs(paths.out_path(), exist_ok=True)
-    os.makedirs(dist_dir, exist_ok=True)
+    try:
+        os.makedirs(paths.out_path())
+    except OSError as exn:
+        if exn.errno != errno.EEXIST:
+            raise
+    try:
+        os.makedirs(dist_dir)
+    except OSError as exn:
+        if exn.errno != errno.EEXIST:
+            raise
 
     # Configure
     config_toml.configure()
@@ -51,9 +61,14 @@ def main():
     # Build
     env = dict(os.environ)
     cmake_bindir = paths.cmake_prebuilt('bin')
-    env['PATH'] = f'{cmake_bindir}:{env["PATH"]}'
-    subprocess.run([paths.rustc_path('x.py'), '--stage', '3', 'install'],
-                   cwd=paths.rustc_path(), env=env, check=True)
+    build_tools_bindir = paths.build_tools_prebuilt('bin')
+    env['PATH'] = '{0}:{1}:{2}'.format(build_tools_bindir, cmake_bindir,
+            env['PATH'])
+    ec = subprocess.Popen([paths.rustc_path('x.py'), '--stage', '3', 'install'],
+                          cwd=paths.rustc_path(), env=env).wait()
+    if ec != 0:
+        print("Build stage failed with error {}".format(ec))
+        sys.exit(ec)
 
     # Fixup
     # The Rust build doesn't have an option to auto-strip binaries, so we do
@@ -63,16 +78,15 @@ def main():
     # both debug symbols which we may want to link into user code and Rust
     # metadata needed at build time.
     libs = glob.glob(paths.out_path('lib', '*.so'))
-    subprocess.run(['strip', '-S'] + libs + [
+    subprocess.check_call(['strip', '-S'] + libs + [
         paths.out_path('bin', 'rustc'),
         paths.out_path('bin', 'cargo'),
-        paths.out_path('bin', 'rustdoc')],
-                   check=True)
+        paths.out_path('bin', 'rustdoc')])
 
     # Dist
-    tarball_path = os.path.join(dist_dir, f'rust-{build_name}.tar.gz')
-    subprocess.run(['tar', 'czf', tarball_path, '.'], cwd=paths.out_path(),
-                   check=True)
+    tarball_path = os.path.join(dist_dir, 'rust-{0}.tar.gz'.format(build_name))
+    subprocess.check_call(['tar', 'czf', tarball_path, '.'],
+                          cwd=paths.out_path())
 
 if __name__ == '__main__':
     main()

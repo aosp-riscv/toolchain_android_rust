@@ -47,10 +47,16 @@ def rust_prebuilt(*args):
 
 def llvm_prebuilt(*args):
     """Generates a path relative to the LLVM prebuilt directory."""
+    clang_name = 'clang-{0}'.format(CLANG_REVISION)
     return workspace_path('prebuilts', 'clang', 'host', 'linux-x86',
-                          f'clang-{CLANG_REVISION}', *args)
+                          clang_name, *args)
 
 
 def cmake_prebuilt(*args):
     """Generates a path relative to the Cmake prebuilt directory."""
     return workspace_path('prebuilts', 'cmake', 'linux-x86', *args)
+
+
+def build_tools_prebuilt(*args):
+    """Generates a path relative to the build-tools prebuilt directory."""
+    return workspace_path('prebuilts', 'build-tools', 'linux-x86', *args)

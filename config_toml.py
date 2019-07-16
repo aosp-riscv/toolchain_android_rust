@@ -28,7 +28,7 @@ def configure():
         ar = paths.llvm_prebuilt('bin', 'llvm-ar')
         ranlib = paths.llvm_prebuilt('bin', 'llvm-ranlib')
         prefix = paths.out_path()
-        config_toml.write(f"""\
+        config_toml.write("""\
 [llvm]
 ninja = true
 [build]
@@ -53,4 +53,4 @@ cc = "{cc}"
 cxx = "{cxx}"
 ar = "{ar}"
 ranlib = "{ranlib}"
-""")
+""".format(cargo=cargo, rustc=rustc, cc=cc, cxx=cxx, ar=ar, ranlib=ranlib, prefix=prefix))
