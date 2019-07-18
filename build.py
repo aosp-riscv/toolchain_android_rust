@@ -61,9 +61,15 @@ def main():
     # Build
     env = dict(os.environ)
     cmake_bindir = paths.cmake_prebuilt('bin')
+    curl_libdir = paths.curl_prebuilt('lib')
     build_tools_bindir = paths.build_tools_prebuilt()
     env['PATH'] = '{0}:{1}:{2}'.format(build_tools_bindir, cmake_bindir,
                                        env['PATH'])
+    if 'LIBRARY_PATH' in env:
+        old_library_path = ':{0}'.format(env['LIBRARY_PATH'])
+    else:
+        old_library_path = ''
+    env['LIBRARY_PATH'] = '{0}{1}'.format(curl_libdir, old_library_path)
     ec = subprocess.Popen([paths.rustc_path('x.py'), '--stage', '3', 'install'],
                           cwd=paths.rustc_path(), env=env).wait()
     if ec != 0:

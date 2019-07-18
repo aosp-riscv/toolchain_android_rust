@@ -61,3 +61,8 @@ def build_tools_prebuilt(*args):
     """Generates a path relative to the build-tools prebuilt directory."""
     return workspace_path('prebuilts', 'build-tools', 'path', 'linux-x86',
                           *args)
+
+def curl_prebuilt(*args):
+    """Generates a path relative to the curl prebuilt directory."""
+    return workspace_path('prebuilts', 'android-emulator-build', 'curl',
+                          'linux-x86_64', *args)
