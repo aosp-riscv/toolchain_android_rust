@@ -1,0 +1,9 @@
+Code-Review+2: Ivan Lozano <ivanlozano@google.com>
+Verified+1: Matthew Maurer <mmaurer@google.com>
+Autosubmit+1: Matthew Maurer <mmaurer@google.com>
+Presubmit-Verified+1: Treehugger Robot <treehugger-gerrit@google.com>
+Submitted-by: Treehugger Robot <treehugger-gerrit@google.com>
+Submitted-at: Thu, 25 Jul 2019 22:25:09 +0000
+Reviewed-on: https://android-review.googlesource.com/c/toolchain/android_rust/+/1091252
+Project: toolchain/android_rust
+Branch: refs/heads/master
