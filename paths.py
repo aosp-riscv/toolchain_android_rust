@@ -11,14 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Provides path expansion to components needed for the rustc build."""
 
 import os.path
 
-
 THIS_DIR = os.path.realpath(os.path.dirname(__file__))
-
 
 STAGE0_RUST_VERSION = '1.35.0'
 CLANG_REVISION = 'r353983d'
@@ -62,7 +59,34 @@ def build_tools_prebuilt(*args):
     return workspace_path('prebuilts', 'build-tools', 'path', 'linux-x86',
                           *args)
 
+
 def curl_prebuilt(*args):
     """Generates a path relative to the curl prebuilt directory."""
     return workspace_path('prebuilts', 'android-emulator-build', 'curl',
                           'linux-x86_64', *args)
+
+
+def ndk(*args):
+    """Generates a path relative to the prebuilt NDK.
+
+    Use of the NDK should eventually be removed so as to make this a Platform
+    target, but is used for now as a transition stage.
+    """
+    return workspace_path('toolchain', 'prebuilts', 'ndk', 'r20', 'toolchains',
+                          'llvm', 'prebuilt', 'linux-x86_64', *args)
+
+
+def ndk_cc(target, abi):
+    """Finds the cc for a given abi + target from the NDK.
+
+    Similar to ndk(), this should be removed eventually to make thie a Platform
+    target.
+    """
+
+    # Tools have a split name for arm in the NDK, handle it here
+    parts = target.split('-')
+    if parts[0] == 'arm':
+        parts[0] = 'armv7a'
+        target = '-'.join(parts)
+
+    return ndk('bin', target + str(abi) + '-clang')

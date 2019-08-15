@@ -11,11 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Handles generation of config.toml for the rustc build."""
 
-
 import paths
+
+host_targets = ['x86_64-unknown-linux-gnu']
+device_targets = ['aarch64-linux-android', 'arm-linux-androideabi']
+all_targets = host_targets + device_targets
 
 
 def configure():
@@ -28,10 +30,36 @@ def configure():
         ar = paths.llvm_prebuilt('bin', 'llvm-ar')
         ranlib = paths.llvm_prebuilt('bin', 'llvm-ranlib')
         prefix = paths.out_path()
+
+        def host_config(target):
+            return """\
+[target.{target}]
+cc = "{cc}"
+cxx = "{cxx}"
+ar = "{ar}"
+ranlib = "{ranlib}"
+""".format(cc=cc, cxx=cxx, ar=ar, ranlib=ranlib, target=target)
+
+        def device_config(target):
+            return """\
+[target.{target}]
+cc="{cc}"
+ar="{ar}"
+android-ndk="{ndk}"
+""".format(ndk=paths.ndk(), ar=ar, cc=paths.ndk_cc(target, 29), target=target)
+
+        host_configs = '\n'.join(
+            [host_config(target) for target in host_targets])
+        device_configs = '\n'.join(
+            [device_config(target) for target in device_targets])
+
+        all_targets_config = '[' + ','.join(
+            ['"' + target + '"' for target in all_targets]) + ']'
         config_toml.write("""\
 [llvm]
 ninja = true
 [build]
+target = {all_targets_config}
 cargo = "{cargo}"
 rustc = "{rustc}"
 docs = false
@@ -46,11 +74,17 @@ cargo-native-static = true
 prefix = "{prefix}"
 sysconfdir = "etc"
 [rust]
-channel = "stable"
+channel = "dev"
 remap-debuginfo = true
-[target.x86_64-unknown-linux-gnu]
-cc = "{cc}"
-cxx = "{cxx}"
-ar = "{ar}"
-ranlib = "{ranlib}"
-""".format(cargo=cargo, rustc=rustc, cc=cc, cxx=cxx, ar=ar, ranlib=ranlib, prefix=prefix))
+{host_configs}
+{device_configs}
+""".format(cargo=cargo,
+           rustc=rustc,
+           cc=cc,
+           cxx=cxx,
+           ar=ar,
+           ranlib=ranlib,
+           prefix=prefix,
+           host_configs=host_configs,
+           device_configs=device_configs,
+           all_targets_config=all_targets_config))
