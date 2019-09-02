@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e4b3dd7d_63b2c8bd",
+        "filename": "paths.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 1115178
+      },
+      "writtenOn": "2019-09-02T04:04:12Z",
+      "side": 1,
+      "message": "Typo",
+      "range": {
+        "startLine": 82,
+        "startChar": 64,
+        "endLine": 82,
+        "endChar": 68
+      },
+      "revId": "c8b699148a6f31d21e4e6feb0cceef94d7dc2ef3",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
