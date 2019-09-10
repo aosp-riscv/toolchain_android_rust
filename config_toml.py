@@ -14,8 +14,9 @@
 """Handles generation of config.toml for the rustc build."""
 
 import paths
+import build_platform
 
-host_targets = ['x86_64-unknown-linux-gnu']
+host_targets = [build_platform.triple()]
 device_targets = ['aarch64-linux-android', 'arm-linux-androideabi']
 all_targets = host_targets + device_targets
 

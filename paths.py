@@ -14,6 +14,7 @@
 """Provides path expansion to components needed for the rustc build."""
 
 import os.path
+import build_platform
 
 THIS_DIR = os.path.realpath(os.path.dirname(__file__))
 
@@ -38,32 +39,33 @@ def out_path(*args):
 
 def rust_prebuilt(*args):
     """Generates a path relative to the rust prebuilt directory."""
-    return workspace_path('prebuilts', 'rust', 'linux-x86',
+    return workspace_path('prebuilts', 'rust', build_platform.prebuilt(),
                           STAGE0_RUST_VERSION, *args)
 
 
 def llvm_prebuilt(*args):
     """Generates a path relative to the LLVM prebuilt directory."""
     clang_name = 'clang-{0}'.format(CLANG_REVISION)
-    return workspace_path('prebuilts', 'clang', 'host', 'linux-x86',
-                          clang_name, *args)
+    return workspace_path('prebuilts', 'clang', 'host',
+                          build_platform.prebuilt(), clang_name, *args)
 
 
 def cmake_prebuilt(*args):
     """Generates a path relative to the Cmake prebuilt directory."""
-    return workspace_path('prebuilts', 'cmake', 'linux-x86', *args)
+    return workspace_path('prebuilts', 'cmake', build_platform.prebuilt(),
+                          *args)
 
 
 def build_tools_prebuilt(*args):
     """Generates a path relative to the build-tools prebuilt directory."""
-    return workspace_path('prebuilts', 'build-tools', 'path', 'linux-x86',
-                          *args)
+    return workspace_path('prebuilts', 'build-tools', 'path',
+                          build_platform.prebuilt(), *args)
 
 
 def curl_prebuilt(*args):
     """Generates a path relative to the curl prebuilt directory."""
     return workspace_path('prebuilts', 'android-emulator-build', 'curl',
-                          'linux-x86_64', *args)
+                          build_platform.prebuilt_full(), *args)
 
 
 def ndk(*args):
@@ -73,7 +75,8 @@ def ndk(*args):
     target, but is used for now as a transition stage.
     """
     return workspace_path('toolchain', 'prebuilts', 'ndk', 'r20', 'toolchains',
-                          'llvm', 'prebuilt', 'linux-x86_64', *args)
+                          'llvm', 'prebuilt', build_platform.prebuilt_full(),
+                          *args)
 
 
 def ndk_cc(target, abi):
