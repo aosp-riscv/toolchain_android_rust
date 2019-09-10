@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # Copyright (C) 2019 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,6 +23,7 @@ import os.path
 import subprocess
 import sys
 
+import build_platform
 import config_toml
 import paths
 
@@ -72,11 +73,15 @@ def main():
     build_tools_bindir = paths.build_tools_prebuilt()
     env['PATH'] = '{0}:{1}:{2}'.format(build_tools_bindir, cmake_bindir,
                                        env['PATH'])
-    if 'LIBRARY_PATH' in env:
-        old_library_path = ':{0}'.format(env['LIBRARY_PATH'])
-    else:
-        old_library_path = ''
-    env['LIBRARY_PATH'] = '{0}{1}'.format(curl_libdir, old_library_path)
+
+    # Only adjust the library path on Linux - on OSX, use the devtools curl
+    if build_platform.system() == 'linux':
+        if 'LIBRARY_PATH' in env:
+            old_library_path = ':{0}'.format(env['LIBRARY_PATH'])
+        else:
+            old_library_path = ''
+        env['LIBRARY_PATH'] = '{0}{1}'.format(curl_libdir, old_library_path)
+
     env['DESTDIR'] = paths.out_path()
     ec = subprocess.Popen([paths.rustc_path('x.py'), '--stage', '3', 'install'],
                           cwd=paths.rustc_path(), env=env).wait()
