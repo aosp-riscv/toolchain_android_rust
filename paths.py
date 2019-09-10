@@ -14,6 +14,7 @@
 """Provides path expansion to components needed for the rustc build."""
 
 import os.path
+import build_platform
 
 THIS_DIR = os.path.realpath(os.path.dirname(__file__))
 
@@ -48,32 +49,33 @@ def out_path(*args):
 
 def rust_prebuilt(*args):
     """Generates a path relative to the rust prebuilt directory."""
-    return workspace_path('prebuilts', 'rust', 'linux-x86',
+    return workspace_path('prebuilts', 'rust', build_platform.prebuilt(),
                           STAGE0_RUST_VERSION, *args)
 
 
 def llvm_prebuilt(*args):
     """Generates a path relative to the LLVM prebuilt directory."""
     clang_name = 'clang-{0}'.format(CLANG_REVISION)
-    return workspace_path('prebuilts', 'clang', 'host', 'linux-x86',
-                          clang_name, *args)
+    return workspace_path('prebuilts', 'clang', 'host',
+                          build_platform.prebuilt(), clang_name, *args)
 
 
 def cmake_prebuilt(*args):
     """Generates a path relative to the Cmake prebuilt directory."""
-    return workspace_path('prebuilts', 'cmake', 'linux-x86', *args)
+    return workspace_path('prebuilts', 'cmake', build_platform.prebuilt(),
+                          *args)
 
 
 def build_tools_prebuilt(*args):
     """Generates a path relative to the build-tools prebuilt directory."""
-    return workspace_path('prebuilts', 'build-tools', 'path', 'linux-x86',
-                          *args)
+    return workspace_path('prebuilts', 'build-tools', 'path',
+                          build_platform.prebuilt(), *args)
 
 
 def curl_prebuilt(*args):
     """Generates a path relative to the curl prebuilt directory."""
     return workspace_path('prebuilts', 'android-emulator-build', 'curl',
-                          'linux-x86_64', *args)
+                          build_platform.prebuilt_full(), *args)
 
 
 def ndk(*args):
@@ -82,21 +84,37 @@ def ndk(*args):
     Use of the NDK should eventually be removed so as to make this a Platform
     target, but is used for now as a transition stage.
     """
-    return workspace_path('toolchain', 'prebuilts', 'ndk', 'r20', 'toolchains',
-                          'llvm', 'prebuilt', 'linux-x86_64', *args)
+    return workspace_path('toolchain', 'prebuilts', 'ndk', 'r20', *args)
 
 
-def ndk_cc(target, abi):
-    """Finds the cc for a given abi + target from the NDK.
+def extract_arch(target):
+    """Extracts from a target the android-style arch"""
+    canon_arch = target.split('-')[0]
+    if canon_arch == 'aarch64':
+        return 'arm64'
+    return canon_arch
 
-    Similar to ndk(), this should be removed eventually to make this a Platform
-    target.
+
+def ndk_sysroot(*args):
+    """Generates a path relative to the NDK sysroot."""
+    return ndk('sysroot', *args)
+
+
+def plat_ndk_sysroot(target, *args):
+    """Generates a path relative to the NDK platform-specific sysroot.
+
+    This sysroot is incomplete, and contains only the object files, not the
+    headers. However, the primary sysroot has the object files behind an
+    additional level of indirection for the API level which platform clang
+    does not look through.
     """
+    return ndk('platforms', 'android-29', 'arch-' + extract_arch(target),
+               *args)
 
-    # Tools have a split name for arm in the NDK, handle it here
-    parts = target.split('-')
-    if parts[0] == 'arm':
-        parts[0] = 'armv7a'
-        target = '-'.join(parts)
 
-    return ndk('bin', target + str(abi) + '-clang')
+def gcc_libdir(target, *args):
+    """Locates the directory with the gcc library target prebuilts."""
+    canon_arch = target.split('-')[0]
+    return workspace_path('prebuilts', 'gcc', build_platform.prebuilt(),
+                          canon_arch, target + '-4.9', 'lib', 'gcc', target,
+                          '4.9.x', *args)
