@@ -1,0 +1,6 @@
+#!/bin/sh
+
+ndk_path_file=$(dirname $0)/ndk_path
+if [ -e $ndk_path_file ]; then
+    $(cat $ndk_path_file) $* -fuse-ld=lld
+fi
