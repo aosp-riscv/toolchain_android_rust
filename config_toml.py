@@ -40,12 +40,25 @@ ranlib = "{ranlib}"
 """.format(cc=cc, cxx=cxx, ar=ar, ranlib=ranlib, target=target)
 
         def device_config(target):
+            if target == 'arm-linux-androideabi':
+                return device_config_arm(target)
             return """\
 [target.{target}]
 cc="{cc}"
 ar="{ar}"
 android-ndk="{ndk}"
 """.format(ndk=paths.ndk(), ar=ar, cc=paths.ndk_cc(target, 29), target=target)
+
+        def device_config_arm(target):
+            with open(paths.this_path('ndk_path'), 'w') as f:
+                f.write(paths.ndk_cc(target, 29))
+            return """\
+[target.{target}]
+cc="{cc}"
+ar="{ar}"
+android-ndk="{ndk}"
+""".format(ndk=paths.ndk(), ar=ar, cc=paths.this_path('clang-with-lld'),
+           target=target)
 
         host_configs = '\n'.join(
             [host_config(target) for target in host_targets])

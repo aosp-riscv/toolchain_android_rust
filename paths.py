@@ -36,6 +36,11 @@ def patches_path(*args):
     return os.path.realpath(os.path.join(THIS_DIR, 'patches', *args))
 
 
+def this_path(*args):
+    """Generates a path relative to this directory."""
+    return os.path.realpath(os.path.join(THIS_DIR, *args))
+
+
 def out_path(*args):
     """Generates a path relative to the output directory of the build."""
     return workspace_path('out', *args)
