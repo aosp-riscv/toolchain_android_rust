@@ -69,7 +69,6 @@ vendor = true
 full-bootstrap = true
 extended = true
 tools = ["cargo"]
-cargo-native-static = true
 [install]
 prefix = "{prefix}"
 sysconfdir = "etc"
