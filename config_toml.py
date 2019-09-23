@@ -67,6 +67,7 @@ android-ndk="{ndk}"
         config_toml.write("""\
 [llvm]
 ninja = true
+targets = "AArch64;ARM;X86"
 [build]
 target = {all_targets_config}
 cargo = "{cargo}"
