@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "82853cd6_b295da7f",
+        "filename": "config_toml.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2019-09-23T17:41:04Z",
+      "side": 1,
+      "message": "Please also add\nexperimental-targets \u003d \"\"\nto disable wasm and risc-v support if we are disabling unused backends.",
+      "revId": "c1579bc2f833f44644e9bcb26eeaef074a44e696",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
+    }
+  ]
+}
