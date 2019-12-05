@@ -1,0 +1,7 @@
+Code-Review+2: Matthew Maurer <mmaurer@google.com>
+Presubmit-Verified+1: Treehugger Robot <treehugger-gerrit@google.com>
+Submitted-by: Yi Kong <yikong@google.com>
+Submitted-at: Thu, 05 Dec 2019 23:33:21 +0000
+Reviewed-on: https://android-review.googlesource.com/c/toolchain/android_rust/+/1182939
+Project: toolchain/android_rust
+Branch: refs/heads/master
