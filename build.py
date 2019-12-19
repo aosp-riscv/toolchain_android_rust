@@ -38,7 +38,7 @@ STDLIB_SOURCES = [
         "src/libterm",
         "src/libtest",
         "src/libunwind",
-        "src/stdsimd",
+        # "src/stdsimd",
         "vendor/cfg-if",
         "vendor/compiler_builtins",
         "vendor/getopts",
