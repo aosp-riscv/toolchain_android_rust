@@ -1,0 +1,47 @@
+From f253f788c34843308572fc5610e100fe6d75469a Mon Sep 17 00:00:00 2001
+From: Matthew Maurer <mmaurer@google.com>
+Date: Mon, 23 Dec 2019 09:13:52 -0800
+Subject: [PATCH] Remove special-cased darwin compiler-rt support
+
+We ship a set of bionic headers with our clang, even on darwin. As a
+result, these clang implementations of atomics are not compatible with
+stdatomic.h. On a normal darwin machine, the compiler needs to provide
+these. For one running our modified clang, it may not do so.
+
+This patch does not belong upstream, as it is an oddity of Android's
+toolchain.
+
+Bug: 146785396
+Change-Id: I044a8afdbf65c45f850fc991f8091924ca8e043c
+---
+ vendor/compiler_builtins/build.rs | 14 --------------
+ 1 file changed, 14 deletions(-)
+
+diff --git a/vendor/compiler_builtins/build.rs b/vendor/compiler_builtins/build.rs
+index c714bc15d..54caf5636 100644
+--- a/vendor/compiler_builtins/build.rs
++++ b/vendor/compiler_builtins/build.rs
+@@ -219,20 +219,6 @@ mod c {
+             ]);
+         }
+ 
+-        if target_vendor == "apple" {
+-            sources.extend(&[
+-                ("atomic_flag_clear", "atomic_flag_clear.c"),
+-                ("atomic_flag_clear_explicit", "atomic_flag_clear_explicit.c"),
+-                ("atomic_flag_test_and_set", "atomic_flag_test_and_set.c"),
+-                (
+-                    "atomic_flag_test_and_set_explicit",
+-                    "atomic_flag_test_and_set_explicit.c",
+-                ),
+-                ("atomic_signal_fence", "atomic_signal_fence.c"),
+-                ("atomic_thread_fence", "atomic_thread_fence.c"),
+-            ]);
+-        }
+-
+         if target_env == "msvc" {
+             if target_arch == "x86_64" {
+                 sources.extend(&[
+-- 
+2.24.1.735.g03f4e72817-goog
+
