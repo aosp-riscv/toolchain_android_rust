@@ -38,11 +38,15 @@ STDLIB_SOURCES = [
         "src/libterm",
         "src/libtest",
         "src/libunwind",
+        "src/stdarch",
+        "vendor/backtrace",
+        "vendor/backtrace-sys",
         "vendor/cfg-if",
         "vendor/compiler_builtins",
         "vendor/getopts",
         "vendor/hashbrown",
         "vendor/libc",
+        "vendor/rustc-demangle"
         "vendor/unicode-width",
 ]
 
