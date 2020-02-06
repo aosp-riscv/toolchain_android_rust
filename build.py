@@ -106,7 +106,8 @@ def main():
         env['LIBRARY_PATH'] = '{0}{1}'.format(curl_libdir, old_library_path)
 
     env['DESTDIR'] = paths.out_path()
-    ec = subprocess.Popen([paths.rustc_path('x.py'), '--stage', '3', 'install'],
+    ec = subprocess.Popen([paths.rustc_path('x.py'), '--stage', '3', 'install',
+                           '-v'],
                           cwd=paths.rustc_path(), env=env).wait()
     if ec != 0:
         print("Build stage failed with error {}".format(ec))
