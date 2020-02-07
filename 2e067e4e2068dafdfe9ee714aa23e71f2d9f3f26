@@ -22,6 +22,30 @@
       "revId": "2e067e4e2068dafdfe9ee714aa23e71f2d9f3f26",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "3f43c5dc_c87658b5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2020-02-07T19:13:54Z",
+      "side": 1,
+      "message": "Adding that flag would require an adjustment to the build configuration as well, which would require approval by the build team and so ~1 workday latency. I intend to upload patches that let me revert this change later today.",
+      "parentUuid": "8551fd72_88e79b48",
+      "range": {
+        "startLine": 17,
+        "startChar": 0,
+        "endLine": 17,
+        "endChar": 70
+      },
+      "revId": "2e067e4e2068dafdfe9ee714aa23e71f2d9f3f26",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": true
     }
   ]
 }
