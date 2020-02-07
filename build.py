@@ -79,6 +79,9 @@ def main():
         if exn.errno != errno.EEXIST:
             raise
 
+    # Shoot down the .git bare reference so Cargo doesn't get confused
+    os.remove(os.path.join(paths.rustc_path(), '.git'))
+
     # Apply patches
     for filename in glob.glob(paths.patches_path('rustc-*')):
         with open(filename, 'r') as file:
