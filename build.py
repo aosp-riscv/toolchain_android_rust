@@ -92,10 +92,11 @@ def main():
     # Build
     env = dict(os.environ)
     cmake_bindir = paths.cmake_prebuilt('bin')
+    ninja_bindir = paths.ninja_prebuilt()
     curl_libdir = paths.curl_prebuilt('lib')
     build_tools_bindir = paths.build_tools_prebuilt()
-    env['PATH'] = '{0}:{1}:{2}'.format(build_tools_bindir, cmake_bindir,
-                                       env['PATH'])
+    env['PATH'] = os.pathsep.join([build_tools_bindir, cmake_bindir, ninja_bindir,
+                                   env['PATH']])
 
     # Only adjust the library path on Linux - on OSX, use the devtools curl
     if build_platform.system() == 'linux':

@@ -69,6 +69,13 @@ def cmake_prebuilt(*args):
                           *args)
 
 
+def ninja_prebuilt(*args):
+    """Generates a path relative to the Ninja prebuilt directory."""
+    return workspace_path('prebuilts', 'ninja', build_platform.prebuilt(),
+                          *args)
+
+
+
 def build_tools_prebuilt(*args):
     """Generates a path relative to the build-tools prebuilt directory."""
     return workspace_path('prebuilts', 'build-tools', 'path',
