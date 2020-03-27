@@ -21,7 +21,8 @@ import build_platform
 import paths
 
 host_targets = [build_platform.triple()]
-device_targets = ['aarch64-linux-android', 'arm-linux-androideabi']
+device_targets = ['aarch64-linux-android', 'arm-linux-androideabi',
+                  'x86_64-linux-android', 'i686-linux-android']
 all_targets = host_targets + device_targets
 
 

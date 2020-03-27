@@ -102,6 +102,8 @@ def extract_arch(target):
     canon_arch = target.split('-')[0]
     if canon_arch == 'aarch64':
         return 'arm64'
+    if canon_arch == 'i686':
+        return 'x86'
     return canon_arch
 
 
@@ -124,7 +126,5 @@ def plat_ndk_sysroot(target, *args):
 
 def gcc_libdir(target, *args):
     """Locates the directory with the gcc library target prebuilts."""
-    canon_arch = target.split('-')[0]
-    return workspace_path('prebuilts', 'gcc', build_platform.prebuilt(),
-                          canon_arch, target + '-4.9', 'lib', 'gcc', target,
-                          '4.9.x', *args)
+    return ndk('toolchains', 'llvm', 'prebuilt', 'linux-x86_64', 'lib',
+               'gcc', target, '4.9.x', *args)
