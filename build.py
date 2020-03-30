@@ -128,6 +128,7 @@ def main():
 
     # Install sources
     if build_platform.system() == 'linux':
+        shutil.rmtree(paths.stdlib_srcs(), ignore_errors=True)
         for stdlib in STDLIB_SOURCES:
             shutil.copytree(paths.rustc_path(stdlib), paths.stdlib_srcs(stdlib))
 
