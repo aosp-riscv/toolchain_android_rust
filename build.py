@@ -89,6 +89,17 @@ def main():
     # Configure
     config_toml.configure()
 
+    # Since some patches may touch vendored source, rebuild Cargo.lock
+    cargo = paths.rust_prebuilt('bin', 'cargo')
+    # Trigger bootstrap to trigger vendoring
+    # Call is not checked because this is *expected* to fail - there isn't a
+    # user facing way to directly trigger the bootstrap, so we give it a
+    # no-op to perform that will require it to write out the cargo config.
+    subprocess.call([paths.rustc_path('x.py'), '--help'],
+                    cwd=paths.rustc_path())
+    # Offline fetch to regenerate lockfile
+    subprocess.check_call([cargo, 'fetch', '--offline'], cwd=paths.rustc_path())
+
     # Build
     env = dict(os.environ)
     cmake_bindir = paths.cmake_prebuilt('bin')
