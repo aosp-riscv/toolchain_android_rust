@@ -1,0 +1,9 @@
+Verified+1: Yabin Cui <yabinc@google.com>
+Presubmit-Verified+1: Treehugger Robot <treehugger-gerrit@google.com>
+Lint+1: Lint 🤖 <android-build-prod-ayeaye@system.gserviceaccount.com>
+Code-Review+2: Matthew Maurer <mmaurer@google.com>
+Submitted-by: Matthew Maurer <mmaurer@google.com>
+Submitted-at: Sat, 02 May 2020 19:38:36 +0000
+Reviewed-on: https://android-review.googlesource.com/c/toolchain/android_rust/+/1300335
+Project: toolchain/android_rust
+Branch: refs/heads/master
