@@ -1,0 +1,9 @@
+Code-Review+2: Joel Galenson <jgalenson@google.com>
+Autosubmit+1: Ivan Lozano <ivanlozano@google.com>
+Presubmit-Verified+1: Treehugger Robot <treehugger-gerrit@google.com>
+Lint+1: Lint 🤖 <android-build-prod-ayeaye@system.gserviceaccount.com>
+Submitted-by: Treehugger Robot <treehugger-gerrit@google.com>
+Submitted-at: Mon, 01 Jun 2020 15:41:00 +0000
+Reviewed-on: https://android-review.googlesource.com/c/toolchain/android_rust/+/1321674
+Project: toolchain/android_rust
+Branch: refs/heads/master
