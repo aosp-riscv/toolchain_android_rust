@@ -1,0 +1,72 @@
+From ea6386b1dfbc0024fccf51add6e0669708adfa20 Mon Sep 17 00:00:00 2001
+From: Ivan Lozano <ivanlozano@google.com>
+Date: Mon, 1 Jun 2020 10:06:31 -0400
+Subject: [PATCH] Add -Z profile-emit=<path> for Gcov gcda output.
+
+Adds a -Z flag to control the file path that the Gcov gcda output is
+written to during runtime. This flag expects a path and filename, e.g.
+-Z profile-emit=gcov/out/lib.gcda.
+
+This works similar to GCC/Clang's -fprofile-dir flag which allows
+control over the output path for gcda coverage files.
+
+Change-Id: I6056f8988201d1d1f6cc7ba605d8c0fee64fee56
+---
+ src/librustc_codegen_llvm/debuginfo/metadata.rs | 8 ++++----
+ src/librustc_session/options.rs                 | 3 +++
+ src/test/run-make-fulldeps/profile/Makefile     | 3 +++
+ 3 files changed, 10 insertions(+), 4 deletions(-)
+
+diff --git a/src/librustc_codegen_llvm/debuginfo/metadata.rs b/src/librustc_codegen_llvm/debuginfo/metadata.rs
+index 46c4a5111..d4687ce75 100644
+--- a/src/librustc_codegen_llvm/debuginfo/metadata.rs
++++ b/src/librustc_codegen_llvm/debuginfo/metadata.rs
+@@ -939,16 +939,16 @@ pub fn compile_unit_metadata(
+         if tcx.sess.opts.debugging_opts.profile {
+             let cu_desc_metadata =
+                 llvm::LLVMRustMetadataAsValue(debug_context.llcontext, unit_metadata);
++            let default_gcda_path = &tcx.output_filenames(LOCAL_CRATE).with_extension("gcda");
++            let gcda_path =
++                tcx.sess.opts.debugging_opts.profile_emit.as_ref().unwrap_or(default_gcda_path);
+ 
+             let gcov_cu_info = [
+                 path_to_mdstring(
+                     debug_context.llcontext,
+                     &tcx.output_filenames(LOCAL_CRATE).with_extension("gcno"),
+                 ),
+-                path_to_mdstring(
+-                    debug_context.llcontext,
+-                    &tcx.output_filenames(LOCAL_CRATE).with_extension("gcda"),
+-                ),
++                path_to_mdstring(debug_context.llcontext, &gcda_path),
+                 cu_desc_metadata,
+             ];
+             let gcov_metadata = llvm::LLVMMDNodeInContext(
+diff --git a/src/librustc_session/options.rs b/src/librustc_session/options.rs
+index a1ecf4e85..a8b6c6ea1 100644
+--- a/src/librustc_session/options.rs
++++ b/src/librustc_session/options.rs
+@@ -878,6 +878,9 @@ options! {DebuggingOptions, DebuggingSetter, basic_debugging_options,
+         "extra arguments to prepend to the linker invocation (space separated)"),
+     profile: bool = (false, parse_bool, [TRACKED],
+                      "insert profiling code"),
++    profile_emit: Option<PathBuf> = (None, parse_opt_pathbuf, [TRACKED],
++        "file path to emit profiling data at runtime when using 'profile' \
++        (default based on relative source path)"),
+     relro_level: Option<RelroLevel> = (None, parse_relro_level, [TRACKED],
+         "choose which RELRO level to use"),
+     nll_facts: bool = (false, parse_bool, [UNTRACKED],
+diff --git a/src/test/run-make-fulldeps/profile/Makefile b/src/test/run-make-fulldeps/profile/Makefile
+index c12712590..04d382b47 100644
+--- a/src/test/run-make-fulldeps/profile/Makefile
++++ b/src/test/run-make-fulldeps/profile/Makefile
+@@ -7,3 +7,6 @@ all:
+        $(call RUN,test) || exit 1
+        [ -e "$(TMPDIR)/test.gcno" ] || (echo "No .gcno file"; exit 1)
+        [ -e "$(TMPDIR)/test.gcda" ] || (echo "No .gcda file"; exit 1)
++       $(RUSTC) -g -Z profile -Z profile-emit=$(TMPDIR)/abc/abc.gcda test.rs
++       $(call RUN,test) || exit 1
++       [ -e "$(TMPDIR)/abc/abc.gcda" ] || (echo "gcda file not emitted to defined path"; exit 1)
+-- 
+2.27.0.rc0.183.gde8f92d652-goog
+
