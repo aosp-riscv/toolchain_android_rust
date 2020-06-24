@@ -1,0 +1,159 @@
+From aaadb7b0e419579fe499336962f0a9c7762ff836 Mon Sep 17 00:00:00 2001
+From: flip1995 <hello@philkrones.com>
+Date: Tue, 21 Apr 2020 22:53:18 +0200
+Subject: [PATCH] Only run cargo lints, when they are warn/deny/forbid
+
+---
+ .../clippy_lints/src/cargo_common_metadata.rs  | 18 +++++++++++-------
+ src/tools/clippy/clippy_lints/src/lib.rs       |  6 +++---
+ .../src/multiple_crate_versions.rs             | 14 +++++++++-----
+ src/tools/clippy/clippy_lints/src/utils/mod.rs |  9 +++++++++
+ .../clippy_lints/src/wildcard_dependencies.rs  | 14 +++++++++-----
+ 5 files changed, 41 insertions(+), 20 deletions(-)
+
+diff --git a/src/tools/clippy/clippy_lints/src/cargo_common_metadata.rs b/src/tools/clippy/clippy_lints/src/cargo_common_metadata.rs
+index 06e866dd7..782da2498 100644
+--- a/src/tools/clippy/clippy_lints/src/cargo_common_metadata.rs
++++ b/src/tools/clippy/clippy_lints/src/cargo_common_metadata.rs
+@@ -2,9 +2,9 @@
+ 
+ use std::path::PathBuf;
+ 
+-use crate::utils::span_lint;
+-use rustc_ast::ast::Crate;
+-use rustc_lint::{EarlyContext, EarlyLintPass};
++use crate::utils::{run_lints, span_lint};
++use rustc_hir::{hir_id::CRATE_HIR_ID, Crate};
++use rustc_lint::{LateContext, LateLintPass};
+ use rustc_session::{declare_lint_pass, declare_tool_lint};
+ use rustc_span::source_map::DUMMY_SP;
+ 
+@@ -35,11 +35,11 @@ declare_clippy_lint! {
+     "common metadata is defined in `Cargo.toml`"
+ }
+ 
+-fn warning(cx: &EarlyContext<'_>, message: &str) {
++fn warning(cx: &LateContext<'_, '_>, message: &str) {
+     span_lint(cx, CARGO_COMMON_METADATA, DUMMY_SP, message);
+ }
+ 
+-fn missing_warning(cx: &EarlyContext<'_>, package: &cargo_metadata::Package, field: &str) {
++fn missing_warning(cx: &LateContext<'_, '_>, package: &cargo_metadata::Package, field: &str) {
+     let message = format!("package `{}` is missing `{}` metadata", package.name, field);
+     warning(cx, &message);
+ }
+@@ -59,8 +59,12 @@ fn is_empty_vec(value: &[String]) -> bool {
+ 
+ declare_lint_pass!(CargoCommonMetadata => [CARGO_COMMON_METADATA]);
+ 
+-impl EarlyLintPass for CargoCommonMetadata {
+-    fn check_crate(&mut self, cx: &EarlyContext<'_>, _: &Crate) {
++impl LateLintPass<'_, '_> for CargoCommonMetadata {
++    fn check_crate(&mut self, cx: &LateContext<'_, '_>, _: &Crate<'_>) {
++        if !run_lints(cx, &[CARGO_COMMON_METADATA], CRATE_HIR_ID) {
++            return;
++        }
++
+         let metadata = if let Ok(metadata) = cargo_metadata::MetadataCommand::new().no_deps().exec() {
+             metadata
+         } else {
+diff --git a/src/tools/clippy/clippy_lints/src/lib.rs b/src/tools/clippy/clippy_lints/src/lib.rs
+index b8415fa3a..b4a59cf21 100644
+--- a/src/tools/clippy/clippy_lints/src/lib.rs
++++ b/src/tools/clippy/clippy_lints/src/lib.rs
+@@ -1017,9 +1017,9 @@ pub fn register_plugins(store: &mut rustc_lint::LintStore, sess: &Session, conf:
+     store.register_early_pass(|| box precedence::Precedence);
+     store.register_early_pass(|| box needless_continue::NeedlessContinue);
+     store.register_early_pass(|| box redundant_static_lifetimes::RedundantStaticLifetimes);
+-    store.register_early_pass(|| box cargo_common_metadata::CargoCommonMetadata);
+-    store.register_early_pass(|| box multiple_crate_versions::MultipleCrateVersions);
+-    store.register_early_pass(|| box wildcard_dependencies::WildcardDependencies);
++    store.register_late_pass(|| box cargo_common_metadata::CargoCommonMetadata);
++    store.register_late_pass(|| box multiple_crate_versions::MultipleCrateVersions);
++    store.register_late_pass(|| box wildcard_dependencies::WildcardDependencies);
+     store.register_early_pass(|| box literal_representation::LiteralDigitGrouping);
+     let literal_representation_threshold = conf.literal_representation_threshold;
+     store.register_early_pass(move || box literal_representation::DecimalLiteralRepresentation::new(literal_representation_threshold));
+diff --git a/src/tools/clippy/clippy_lints/src/multiple_crate_versions.rs b/src/tools/clippy/clippy_lints/src/multiple_crate_versions.rs
+index 88605c52f..ed85d0315 100644
+--- a/src/tools/clippy/clippy_lints/src/multiple_crate_versions.rs
++++ b/src/tools/clippy/clippy_lints/src/multiple_crate_versions.rs
+@@ -1,8 +1,8 @@
+ //! lint on multiple versions of a crate being used
+ 
+-use crate::utils::span_lint;
+-use rustc_ast::ast::Crate;
+-use rustc_lint::{EarlyContext, EarlyLintPass};
++use crate::utils::{run_lints, span_lint};
++use rustc_hir::{Crate, CRATE_HIR_ID};
++use rustc_lint::{LateContext, LateLintPass};
+ use rustc_session::{declare_lint_pass, declare_tool_lint};
+ use rustc_span::source_map::DUMMY_SP;
+ 
+@@ -33,8 +33,12 @@ declare_clippy_lint! {
+ 
+ declare_lint_pass!(MultipleCrateVersions => [MULTIPLE_CRATE_VERSIONS]);
+ 
+-impl EarlyLintPass for MultipleCrateVersions {
+-    fn check_crate(&mut self, cx: &EarlyContext<'_>, _: &Crate) {
++impl LateLintPass<'_, '_> for MultipleCrateVersions {
++    fn check_crate(&mut self, cx: &LateContext<'_, '_>, _: &Crate<'_>) {
++        if !run_lints(cx, &[MULTIPLE_CRATE_VERSIONS], CRATE_HIR_ID) {
++            return;
++        }
++
+         let metadata = if let Ok(metadata) = cargo_metadata::MetadataCommand::new().exec() {
+             metadata
+         } else {
+diff --git a/src/tools/clippy/clippy_lints/src/utils/mod.rs b/src/tools/clippy/clippy_lints/src/utils/mod.rs
+index 8d75e1269..3f62ded10 100644
+--- a/src/tools/clippy/clippy_lints/src/utils/mod.rs
++++ b/src/tools/clippy/clippy_lints/src/utils/mod.rs
+@@ -1399,6 +1399,15 @@ pub fn fn_has_unsatisfiable_preds(cx: &LateContext<'_, '_>, did: DefId) -> bool
+     )
+ }
+ 
++pub fn run_lints(cx: &LateContext<'_, '_>, lints: &[&'static Lint], id: HirId) -> bool {
++    lints.iter().any(|lint| {
++        matches!(
++            cx.tcx.lint_level_at_node(lint, id),
++            (Level::Forbid | Level::Deny | Level::Warn, _)
++        )
++    })
++}
++
+ #[cfg(test)]
+ mod test {
+     use super::{trim_multiline, without_block_comments};
+diff --git a/src/tools/clippy/clippy_lints/src/wildcard_dependencies.rs b/src/tools/clippy/clippy_lints/src/wildcard_dependencies.rs
+index 035a10b1a..d8d48eb15 100644
+--- a/src/tools/clippy/clippy_lints/src/wildcard_dependencies.rs
++++ b/src/tools/clippy/clippy_lints/src/wildcard_dependencies.rs
+@@ -1,6 +1,6 @@
+-use crate::utils::span_lint;
+-use rustc_ast::ast::Crate;
+-use rustc_lint::{EarlyContext, EarlyLintPass};
++use crate::utils::{run_lints, span_lint};
++use rustc_hir::{hir_id::CRATE_HIR_ID, Crate};
++use rustc_lint::{LateContext, LateLintPass};
+ use rustc_session::{declare_lint_pass, declare_tool_lint};
+ use rustc_span::source_map::DUMMY_SP;
+ 
+@@ -28,8 +28,12 @@ declare_clippy_lint! {
+ 
+ declare_lint_pass!(WildcardDependencies => [WILDCARD_DEPENDENCIES]);
+ 
+-impl EarlyLintPass for WildcardDependencies {
+-    fn check_crate(&mut self, cx: &EarlyContext<'_>, _: &Crate) {
++impl LateLintPass<'_, '_> for WildcardDependencies {
++    fn check_crate(&mut self, cx: &LateContext<'_, '_>, _: &Crate<'_>) {
++        if !run_lints(cx, &[WILDCARD_DEPENDENCIES], CRATE_HIR_ID) {
++            return;
++        }
++
+         let metadata = if let Ok(metadata) = cargo_metadata::MetadataCommand::new().no_deps().exec() {
+             metadata
+         } else {
+-- 
+2.27.0.111.gc72c7da667-goog
+
