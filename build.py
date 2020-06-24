@@ -92,6 +92,7 @@ def main():
             out, _ = p.communicate(file.read())
 
             # Print output for logging purposes.
+            print("Applying patch: " + filename)
             print(out)
 
             # Check for the presence of FAILED as the error code is the same
