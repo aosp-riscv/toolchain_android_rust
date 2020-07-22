@@ -110,7 +110,6 @@ ar="{ar}"
 ninja = true
 targets = "AArch64;ARM;X86"
 experimental-targets = ""
-allow-old-toolchain = true
 [build]
 target = {all_targets_config}
 cargo = "{cargo}"
