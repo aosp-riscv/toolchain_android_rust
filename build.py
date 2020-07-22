@@ -125,18 +125,26 @@ def main():
     # Build
     env = dict(os.environ)
     cmake_bindir = paths.cmake_prebuilt('bin')
+
     ninja_bindir = paths.ninja_prebuilt()
     curl_libdir = paths.curl_prebuilt('lib')
     build_tools_bindir = paths.build_tools_prebuilt()
     env['PATH'] = os.pathsep.join([build_tools_bindir, cmake_bindir, ninja_bindir,
                                    env['PATH']])
-
+    print("asdf")
+    print(cmake_bindir)
+    print(curl_libdir)
+    print(build_tools_bindir)
+    print("asdf")
     # Only adjust the library path on Linux - on OSX, use the devtools curl
     if build_platform.system() == 'linux':
         if 'LIBRARY_PATH' in env:
             old_library_path = ':{0}'.format(env['LIBRARY_PATH'])
         else:
             old_library_path = ''
+        print("asdf")
+        print(old_library_path)
+        print("asdf")
         env['LIBRARY_PATH'] = '{0}{1}'.format(curl_libdir, old_library_path)
 
     env['DESTDIR'] = paths.out_path()
