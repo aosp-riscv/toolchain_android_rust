@@ -34,6 +34,7 @@ def configure():
         cc = paths.llvm_prebuilt('bin', 'clang')
         cxx = paths.llvm_prebuilt('bin', 'clang++')
         ar = paths.llvm_prebuilt('bin', 'llvm-ar')
+        cxxstd = paths.llvm_prebuilt('lib64', "clang", "11.0.1")
         ranlib = paths.llvm_prebuilt('bin', 'llvm-ranlib')
 
         def host_config(target):
@@ -62,8 +63,8 @@ def configure():
             with open(cxx_wrapper_name, 'w') as f:
                 f.write("""\
 #!/bin/sh
-{real_cxx} $* --target={target} {sysroot_flags}
-""".format(real_cxx=cxx, target=target, sysroot_flags=sysroot_flags))
+{real_cxx} $* --target={target} {sysroot_flags} -I{cxxstd}
+""".format(real_cxx=cxx, target=target, sysroot_flags=sysroot_flags, cxxstd=cxxstd))
 
             s = os.stat(wrapper_name)
             os.chmod(wrapper_name, s.st_mode | stat.S_IEXEC)
