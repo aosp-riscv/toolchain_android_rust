@@ -34,7 +34,13 @@ def configure():
         cc = paths.llvm_prebuilt('bin', 'clang')
         cxx = paths.llvm_prebuilt('bin', 'clang++')
         ar = paths.llvm_prebuilt('bin', 'llvm-ar')
+        cxxstd = paths.llvm_prebuilt('include', 'c++', 'v1')
         ranlib = paths.llvm_prebuilt('bin', 'llvm-ranlib')
+        linker_flags = ' -Wl,-rpath,' + ' -Wl,-rpath,'.join(paths.linker_path()) +
+        ' -L' + ' -L'.join(paths.linker_path() +
+        ' -B' + ' -B'.join(paths.linker_path() +
+        ' -I' + ' -I'.join(paths.linker_path())
+
 
         def host_config(target):
             wrapper_name = paths.this_path('clang-%s' % target)
@@ -61,9 +67,10 @@ def configure():
 
             with open(cxx_wrapper_name, 'w') as f:
                 f.write("""\
-#!/bin/sh
-{real_cxx} $* --target={target} {sysroot_flags}
-""".format(real_cxx=cxx, target=target, sysroot_flags=sysroot_flags))
+#!/bin/bash -v
+{real_cxx} -I{cxxstd} $* --target={target} {sysroot_flags} {linker_flags}
+""".format(real_cxx=cxx, target=target, sysroot_flags=sysroot_flags, cxxstd=cxxstd,
+           linker_flags=linker_flags))
 
             s = os.stat(wrapper_name)
             os.chmod(wrapper_name, s.st_mode | stat.S_IEXEC)
