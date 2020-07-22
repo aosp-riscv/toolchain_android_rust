@@ -55,7 +55,6 @@ def rust_prebuilt(*args):
     return workspace_path('prebuilts', 'rust', build_platform.prebuilt(),
                           STAGE0_RUST_VERSION, *args)
 
-
 def llvm_prebuilt(*args):
     """Generates a path relative to the LLVM prebuilt directory."""
     clang_name = 'clang-{0}'.format(CLANG_REVISION)
