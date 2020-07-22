@@ -34,7 +34,15 @@ def configure():
         cc = paths.llvm_prebuilt('bin', 'clang')
         cxx = paths.llvm_prebuilt('bin', 'clang++')
         ar = paths.llvm_prebuilt('bin', 'llvm-ar')
+        cxxstd = paths.llvm_prebuilt('include', 'c++', 'v1')
         ranlib = paths.llvm_prebuilt('bin', 'llvm-ranlib')
+        cxx_linker_flags = ' -Wl,-rpath,' + paths.cxx_linker_path() + \
+        ' -L' + paths.cxx_linker_path() + \
+        ' -I' + paths.cxx_linker_path()
+        #cc_linker_flags = ' -Wl,-rpath,' + ' -Wl,-rpath,'.join(paths.cc_linker_path()) + \
+        #' -L' + ' -L'.join(paths.cc_linker_path()) + \
+        #' -I' + ' -I'.join(paths.cc_linker_path())
+
 
         def host_config(target):
             wrapper_name = paths.this_path('clang-%s' % target)
@@ -55,15 +63,19 @@ def configure():
 
             with open(wrapper_name, 'w') as f:
                 f.write("""\
-#!/bin/sh
-{real_cc} $* --target={target} {sysroot_flags}
-""".format(real_cc=cc, target=target, sysroot_flags=sysroot_flags))
+#!/bin/bash -v
+{real_cc} -I{cxxstd} $* --target={target} {sysroot_flags}
+""".format(real_cc=cc, target=target, sysroot_flags=sysroot_flags,
+           cxxstd=cxxstd))
+           #cc_linker_flags=cc_linker_flags))
 
             with open(cxx_wrapper_name, 'w') as f:
                 f.write("""\
-#!/bin/sh
-{real_cxx} $* --target={target} {sysroot_flags}
-""".format(real_cxx=cxx, target=target, sysroot_flags=sysroot_flags))
+#!/bin/bash -v
+{real_cxx} -I{cxxstd} $* --target={target} {sysroot_flags} {cxx_linker_flags} -stdlib=libc++
+""".format(real_cxx=cxx, target=target, sysroot_flags=sysroot_flags,
+           cxxstd=cxxstd,
+           cxx_linker_flags=cxx_linker_flags))
 
             s = os.stat(wrapper_name)
             os.chmod(wrapper_name, s.st_mode | stat.S_IEXEC)
@@ -75,7 +87,7 @@ cc = "{cc}"
 cxx = "{cxx}"
 ar = "{ar}"
 ranlib = "{ranlib}"
-linker = "{cc}"
+linker = "{cxx}"
 """.format(cc=wrapper_name, cxx=cxx_wrapper_name, ar=ar, ranlib=ranlib, target=target)
 
         def device_config(target):
@@ -111,6 +123,7 @@ ninja = true
 targets = "AArch64;ARM;X86"
 experimental-targets = ""
 allow-old-toolchain = true
+use-libcxx = true
 [build]
 target = {all_targets_config}
 cargo = "{cargo}"
