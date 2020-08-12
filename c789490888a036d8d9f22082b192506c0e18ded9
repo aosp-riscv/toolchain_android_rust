@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5e3b6ba7_7fe2df0c",
+        "filename": "OWNERS",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2020-08-12T10:04:55Z",
+      "side": 1,
+      "message": "I\u0027m also ok with moving the proper list of OWNERS here, and pointing prebuilts/rust to this version.",
+      "revId": "c789490888a036d8d9f22082b192506c0e18ded9",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
