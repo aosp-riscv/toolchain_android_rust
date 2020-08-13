@@ -1,0 +1,10 @@
+Autosubmit+1: Stephen Hines <srhines@google.com>
+Code-Review+2: Matthew Maurer <mmaurer@google.com>
+Code-Review+2: Jeffrey Vander Stoep <jeffv@google.com>
+Presubmit-Verified+1: Treehugger Robot <treehugger-gerrit@google.com>
+Lint+1: Lint 🤖 <android-build-prod-ayeaye@system.gserviceaccount.com>
+Submitted-by: Treehugger Robot <treehugger-gerrit@google.com>
+Submitted-at: Thu, 13 Aug 2020 20:25:39 +0000
+Reviewed-on: https://android-review.googlesource.com/c/toolchain/android_rust/+/1399289
+Project: toolchain/android_rust
+Branch: refs/heads/master
