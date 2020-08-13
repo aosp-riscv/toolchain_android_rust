@@ -69,7 +69,10 @@ def main():
     build_name = args.build_name
     # We take DIST_DIR through an environment variable rather than an
     # argument to match the interface for traditional Android builds.
-    dist_dir = os.environ['DIST_DIR']
+    dist_dir = os.environ.get('DIST_DIR')
+    if not dist_dir:
+        dist_dir = 'dist'
+    dist_dir = os.path.realpath(dist_dir)
 
     # Pre-create target directories
     try:
