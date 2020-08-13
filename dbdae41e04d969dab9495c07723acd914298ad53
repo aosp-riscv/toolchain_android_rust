@@ -33,6 +33,23 @@
       "revId": "dbdae41e04d969dab9495c07723acd914298ad53",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9f06fa5c_8db398f2",
+        "filename": "config_toml.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2020-08-13T19:48:09Z",
+      "side": 1,
+      "message": "Maybe it\u0027d be better to put this on the result of check_output() itself so that sysroot contains the right value, but this will fix the build, so it\u0027s fine as is.",
+      "revId": "dbdae41e04d969dab9495c07723acd914298ad53",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
