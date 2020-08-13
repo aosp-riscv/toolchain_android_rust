@@ -48,10 +48,10 @@ def configure():
             # On pre-Mojave, this command will output the empty string.
             if build_platform.system() == 'darwin':
                 sysroot = subprocess.check_output(['xcrun', '--sdk', 'macosx',
-                                                   '--show-sdk-path'])
+                                                   '--show-sdk-path']).rstrip()
 
             if sysroot:
-                sysroot_flags = "--sysroot " + sysroot.rstrip()
+                sysroot_flags = "--sysroot " + sysroot
             else:
                 sysroot_flags = ""
 
