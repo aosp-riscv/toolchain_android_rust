@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3fd6e5_1353d56e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2020-08-13T19:45:27Z",
+      "side": 1,
+      "message": "Build is still running for the past few minutes, but this is at the very least a step in the right direction.",
+      "revId": "dbdae41e04d969dab9495c07723acd914298ad53",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
