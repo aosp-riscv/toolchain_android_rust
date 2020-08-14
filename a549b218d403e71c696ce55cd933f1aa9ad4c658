@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c1cf0609_cdeadc19",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2020-08-14T00:09:12Z",
+      "side": 1,
+      "message": "Found a better way to do what I wanted. ;)",
+      "revId": "a549b218d403e71c696ce55cd933f1aa9ad4c658",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
