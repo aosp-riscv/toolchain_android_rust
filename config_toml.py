@@ -39,7 +39,12 @@ def configure():
         # Add the path at which libc++ can be found during the build
         cxx_linker_flags = ' -Wl,-rpath,' + paths.cxx_linker_path()
         # Add the path at which libc++ can be found in Android checkouts
-        cxx_linker_flags += ' -Wl,-rpath,' + paths.android_cxx_linker_path()
+        cxx_linker_flags += ' -Wl,-rpath,'
+        if build_platform.system() == 'darwin':
+            cxx_linker_flags += '@loader_path/'
+        else:
+            cxx_linker_flags += '$ORIGIN/'
+        cxx_linker_flags += paths.android_cxx_linker_path()
 
         def host_config(target):
             wrapper_name = paths.this_path('clang-%s' % target)
