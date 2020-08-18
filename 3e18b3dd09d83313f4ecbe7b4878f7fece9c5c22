@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "149afa34_3acfc5ee",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1054468
+      },
+      "writtenOn": "2020-08-18T11:43:24Z",
+      "side": 1,
+      "message": "This doesn\u0027t cleanly apply. ",
+      "revId": "3e18b3dd09d83313f4ecbe7b4878f7fece9c5c22",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
