@@ -16,6 +16,23 @@
       "revId": "7b63b28bef2ad27ab2094fdb1f2efa1bb0e4eac1",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba9e6999_feb5cc06",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1054468
+      },
+      "writtenOn": "2020-08-18T12:50:32Z",
+      "side": 1,
+      "message": "Try again now that aosp/1403448 has merged. Note: this is not expected to pass any build other than the aosp_rust_toolchain build since I need to upgrade the build number to include aosp/1402392.",
+      "revId": "7b63b28bef2ad27ab2094fdb1f2efa1bb0e4eac1",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
     }
   ]
 }
