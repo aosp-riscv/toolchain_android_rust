@@ -1,0 +1,35 @@
+From 30866d05664ce01f0818d24475644b33b140a3db Mon Sep 17 00:00:00 2001
+From: Jeff Vander Stoep <jeffv@google.com>
+Date: Tue, 18 Aug 2020 14:00:05 +0200
+Subject: [PATCH] cargo: Don't list-files in bare git repo
+
+This change was mistakenly removed in aosp/1403447.
+
+Bug: 165026104
+Test: TH along with 1.45.2 upgrade
+Change-Id: I8fe7223dbfa085794dfeea45692ea684ea0f24d8
+---
+ src/tools/cargo/src/cargo/sources/path.rs | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/src/tools/cargo/src/cargo/sources/path.rs b/src/tools/cargo/src/cargo/sources/path.rs
+index cf406e8dd..046a2a209 100644
+--- a/src/tools/cargo/src/cargo/sources/path.rs
++++ b/src/tools/cargo/src/cargo/sources/path.rs
+@@ -211,6 +211,13 @@ impl<'cfg> PathSource<'cfg> {
+         };
+         let manifest_path = repo_relative_path.join("Cargo.toml");
+         if index.get_path(&manifest_path, 0).is_some() {
++            // We're in the index, but with a bare repo, there's
++            // not a canonical workdir, so list_files_git won't
++            // work. Fall back to non-git-based source detection.
++            // See rust-lang/cargo#7876.
++            if repo.is_bare() {
++                return Ok(None)
++            }
+             return Ok(Some(self.list_files_git(pkg, &repo, filter)?));
+         }
+         // Package Cargo.toml is not in git, don't use git to guide our selection.
+-- 
+2.28.0.220.ged08abb693-goog
+
