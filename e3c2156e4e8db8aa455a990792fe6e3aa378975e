@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "51f6f020_825d3919",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2020-09-23T20:44:04Z",
+      "side": 1,
+      "message": "This can\u0027t go in until we pick the result of building the other two changes.",
+      "revId": "e3c2156e4e8db8aa455a990792fe6e3aa378975e",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889",
+      "unresolved": false
+    }
+  ]
+}
