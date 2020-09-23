@@ -1,0 +1,9 @@
+Code-Review+2: Ivan Lozano <ivanlozano@google.com>
+Code-Review+2: Jeffrey Vander Stoep <jeffv@google.com>
+Presubmit-Verified+1: Treehugger Robot <treehugger-gerrit@google.com>
+Lint+1: Lint 🤖 <android-build-ayeaye@system.gserviceaccount.com>
+Submitted-by: Matthew Maurer <mmaurer@google.com>
+Submitted-at: Wed, 23 Sep 2020 17:50:57 +0000
+Reviewed-on: https://android-review.googlesource.com/c/toolchain/android_rust/+/1434613
+Project: toolchain/android_rust
+Branch: refs/heads/master
