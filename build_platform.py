@@ -33,3 +33,12 @@ def triple():
     if build_os == 'darwin':
         return 'x86_64-apple-darwin'
     raise RuntimeError("Unknown OS: " + build_os)
+
+def alt_triples():
+    """Returns the multilib targets for the build environment."""
+    build_os = system()
+    if build_os == 'linux':
+        return ['i686-unknown-linux-gnu']
+    if build_os == 'darwin':
+        return []
+    raise RuntimeError("Unknown OWS: " + build_os)
