@@ -1,0 +1,8 @@
+Code-Review+2: Jeffrey Vander Stoep <jeffv@google.com>
+Presubmit-Verified+1: Treehugger Robot <treehugger-gerrit@google.com>
+Lint+1: Lint 🤖 <ayeaye-gerrit@google.com>
+Submitted-by: Thiébaud Weksteen <tweek@google.com>
+Submitted-at: Thu, 26 Nov 2020 16:07:31 +0000
+Reviewed-on: https://android-review.googlesource.com/c/toolchain/android_rust/+/1511491
+Project: toolchain/android_rust
+Branch: refs/heads/master
