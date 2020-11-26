@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7822a7ea_71e37ac8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1054468
+      },
+      "writtenOn": "2020-11-26T15:15:39Z",
+      "side": 1,
+      "message": "I like this. It forces us to get rid of patches that have been merged.",
+      "revId": "531853f0e7b573a369f5dcaec0a7b49030a3db1c",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
