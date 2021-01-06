@@ -1,0 +1,32 @@
+From ed1c2f1e5e75754e50a40585ac4e267ef7498299 Mon Sep 17 00:00:00 2001
+From: Ivan Lozano <ivanlozano@google.com>
+Date: Wed, 6 Jan 2021 12:02:51 -0500
+Subject: [PATCH] Add remaining set of android archs to the list of sanitizer
+ supported targets.
+
+Change-Id: I9754b7a8263313727ef5684431d54c3376225264
+---
+ compiler/rustc_session/src/session.rs | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/compiler/rustc_session/src/session.rs b/compiler/rustc_session/src/session.rs
+index 2bf8090ab9..5fc930294b 100644
+--- a/compiler/rustc_session/src/session.rs
++++ b/compiler/rustc_session/src/session.rs
+@@ -1497,8 +1497,13 @@ fn validate_commandline_args_with_session_available(sess: &Session) {
+         "aarch64-fuchsia",
+         "aarch64-linux-android",
+         "aarch64-unknown-linux-gnu",
++        "aarch64-linux-android",
++        "arm-linux-androideabi",
++        "armv7-linux-androideabi",
++        "i686-linux-android",
+         "x86_64-apple-darwin",
+         "x86_64-fuchsia",
++        "x86_64-linux-android",
+         "x86_64-unknown-freebsd",
+         "x86_64-unknown-linux-gnu",
+     ];
+-- 
+2.29.2.729.g45daf8777d-goog
+
