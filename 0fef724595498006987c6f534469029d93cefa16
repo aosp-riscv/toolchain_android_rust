@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "50f01991_e55144eb",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1115178
+      },
+      "writtenOn": "2021-01-07T14:18:11Z",
+      "side": 1,
+      "message": "Copied it over to AOSP and tested building with it, see new test stanza.",
+      "parentUuid": "66139909_3fa2c230",
+      "revId": "0fef724595498006987c6f534469029d93cefa16",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "52e17865_20465b22",
@@ -31,6 +49,24 @@
       "writtenOn": "2021-01-06T21:02:55Z",
       "side": 1,
       "message": "Isn\u0027t that already there just above unknown?",
+      "revId": "0fef724595498006987c6f534469029d93cefa16",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "25c20175_6990859b",
+        "filename": "patches/rustc-0010-Add-remaining-set-of-android-archs-to-the-list-of-sanitizer-supported-targets.patch",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1115178
+      },
+      "writtenOn": "2021-01-07T14:18:11Z",
+      "side": 1,
+      "message": "Ah whoops, thanks! Also added the x86 linux arch which also was not in the list.",
+      "parentUuid": "52e17865_20465b22",
       "revId": "0fef724595498006987c6f534469029d93cefa16",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
