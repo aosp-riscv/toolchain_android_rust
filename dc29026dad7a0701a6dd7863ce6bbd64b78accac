@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7d13f4ae_5aebf456",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1056364
+      },
+      "writtenOn": "2021-01-08T19:11:36Z",
+      "side": 1,
+      "message": "The presumbit build fails because the binutils on buildbot is too old. I have filed a bug in http://b/177076106.",
+      "revId": "dc29026dad7a0701a6dd7863ce6bbd64b78accac",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
