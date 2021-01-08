@@ -146,6 +146,18 @@ def main():
                           cwd=paths.rustc_path(), env=env).wait()
     if ec != 0:
         print("Build stage failed with error {}".format(ec))
+        cmake_dir = os.path.join(paths.rustc_path(), 'build/x86_64-unknown-linux-gnu/llvm/build/CMakeFiles')
+        cmake_output = os.path.join(cmake_dir, 'CMakeOutput.log')
+        cmake_error = os.path.join(cmake_dir, 'CMakeError.log')
+        with open(cmake_output, 'r') as fh:
+            print('%s:' % cmake_output)
+            print(fh.read())
+        with open(cmake_error, 'r') as fh:
+            print('%s:' % cmake_error)
+            print(fh.read())
+        print('\nversion of ld:')
+        subprocess.call(['/usr/bin/ld', '--version'])
+        subprocess.call(['/usr/bin/ld', '--help'])
         sys.exit(ec)
 
     # Install sources
