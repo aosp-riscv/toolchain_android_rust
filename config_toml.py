@@ -66,13 +66,13 @@ def configure():
             with open(wrapper_name, 'w') as f:
                 f.write("""\
 #!/bin/sh
-{real_cc} $* --target={target} {sysroot_flags}
+{real_cc} $* -fuse-ld=lld --target={target} {sysroot_flags}
 """.format(real_cc=cc, target=target, sysroot_flags=sysroot_flags))
 
             with open(cxx_wrapper_name, 'w') as f:
                 f.write("""\
 #!/bin/sh
-{real_cxx} -I{cxxstd} $* --target={target} {sysroot_flags} {cxx_linker_flags} -stdlib=libc++
+{real_cxx} -I{cxxstd} $* -fuse-ld=lld --target={target} {sysroot_flags} {cxx_linker_flags} -stdlib=libc++
 """.format(real_cxx=cxx, target=target, sysroot_flags=sysroot_flags,
            cxxstd=cxxstd,
            cxx_linker_flags=cxx_linker_flags))
