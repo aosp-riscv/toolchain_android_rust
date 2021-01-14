@@ -1,0 +1,8 @@
+Code-Review+2: Ivan Lozano <ivanlozano@google.com>
+Lint+1: Lint 🤖 <ayeaye-gerrit@google.com>
+Presubmit-Verified+2: Treehugger Robot <treehugger-gerrit@google.com>
+Submitted-by: Thiébaud Weksteen <tweek@google.com>
+Submitted-at: Thu, 14 Jan 2021 18:26:39 +0000
+Reviewed-on: https://android-review.googlesource.com/c/toolchain/android_rust/+/1544245
+Project: toolchain/android_rust
+Branch: refs/heads/master
