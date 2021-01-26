@@ -1,0 +1,8 @@
+Presubmit-Verified+2: Treehugger Robot <treehugger-gerrit@google.com>
+Lint+1: Lint 🤖 <ayeaye-gerrit@google.com>
+Code-Review+2: Stephen Hines <srhines@google.com>
+Submitted-by: Yabin Cui <yabinc@google.com>
+Submitted-at: Tue, 26 Jan 2021 00:12:30 +0000
+Reviewed-on: https://android-review.googlesource.com/c/toolchain/android_rust/+/1559732
+Project: toolchain/android_rust
+Branch: refs/heads/master
