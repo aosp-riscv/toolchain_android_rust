@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "dfa82bc9_dee9fdbb",
+        "filename": "patches/rustc-0011-Populate-abort-message.patch",
+        "patchSetId": 1
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 1561651
+      },
+      "writtenOn": "2021-02-04T10:05:46Z",
+      "side": 1,
+      "message": "Cargo keeps an index of the vendors crate files. I had to update libc/src/unix/linux_like/android/mod.rs, and therefore update this index. \n\nThe definition of __rust_start_panic has changed in 1.50.0 anyway so this patch will not apply cleanly then. This is only if 1.49.0 has to be rolled out again.",
+      "range": {
+        "startLine": 100,
+        "startChar": 0,
+        "endLine": 100,
+        "endChar": 38
+      },
+      "revId": "69671c758ce5f04f6cedb5c4a5f640761a9af533",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
