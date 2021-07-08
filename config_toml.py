@@ -28,14 +28,15 @@ all_targets = host_targets + device_targets
 
 def configure():
     """Generates config.toml for the rustc build."""
-    with open(paths.rustc_path('config.toml'), 'w') as config_toml:
-        cargo = paths.rust_prebuilt('bin', 'cargo')
-        rustc = paths.rust_prebuilt('bin', 'rustc')
-        cc = paths.llvm_prebuilt('bin', 'clang')
-        cxx = paths.llvm_prebuilt('bin', 'clang++')
-        ar = paths.llvm_prebuilt('bin', 'llvm-ar')
+    with paths.rustc_path('config.toml').open('w') as config_toml:
+        cargo  = paths.rust_prebuilt('bin', 'cargo')
+        rustc  = paths.rust_prebuilt('bin', 'rustc')
+        cc     = paths.llvm_prebuilt('bin', 'clang')
+        cxx    = paths.llvm_prebuilt('bin', 'clang++')
+        ar     = paths.llvm_prebuilt('bin', 'llvm-ar')
         cxxstd = paths.llvm_prebuilt('include', 'c++', 'v1')
         ranlib = paths.llvm_prebuilt('bin', 'llvm-ranlib')
+
         # Add the path at which libc++ can be found in Android checkouts
         cxx_linker_flags = ' -Wl,-rpath,'
         if build_platform.system() == 'darwin':
@@ -43,7 +44,7 @@ def configure():
         else:
             cxx_linker_flags += '\\$ORIGIN/../lib64'
         # Add the path at which libc++ can be found during the build
-        cxx_linker_flags += ' -Wl,-rpath,' + paths.cxx_linker_path()
+        cxx_linker_flags += ' -Wl,-rpath,' + paths.cxx_linker_path().as_posix()
 
         def host_config(target):
             wrapper_name = paths.this_path('clang-%s' % target)
