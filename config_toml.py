@@ -26,9 +26,9 @@ device_targets = ['aarch64-linux-android', 'armv7-linux-androideabi',
 all_targets = host_targets + device_targets
 
 
-def configure():
+def configure(rustc_path):
     """Generates config.toml for the rustc build."""
-    with paths.rustc_path('config.toml').open('w') as config_toml:
+    with (rustc_path / 'config.toml').open('w') as config_toml:
         cargo  = paths.rust_prebuilt('bin', 'cargo')
         rustc  = paths.rust_prebuilt('bin', 'rustc')
         cc     = paths.llvm_prebuilt('bin', 'clang')
@@ -122,6 +122,7 @@ ar="{ar}"
         all_targets_config = '[' + ','.join(
             ['"' + target + '"' for target in all_targets]) + ']'
         config_toml.write("""\
+changelog-seen = 2
 [llvm]
 ninja = true
 targets = "AArch64;ARM;X86"
