@@ -20,6 +20,7 @@ import os
 import os.path
 from pathlib import Path
 import shutil
+import source_manager
 import subprocess
 import sys
 
@@ -68,9 +69,15 @@ def main():
     args = parse_args()
     build_name = args.build_name
 
+    # Add some output padding to make the messages easier to read
+    print()
+
     #
     # Update environment variables
     #
+
+    OUT_PATH_PACKAGE = paths.out_path('package')
+    OUT_PATH_RUSTC   = paths.out_path('rustc')
 
     env = dict(os.environ)
     env['PATH'] = os.pathsep.join(
@@ -78,7 +85,6 @@ def main():
           paths.rust_prebuilt('bin'),
           paths.cmake_prebuilt('bin'),
           paths.ninja_prebuilt(),
-          paths.curl_prebuilt('lib'),
           paths.build_tools_prebuilt(),
         ]] + [env['PATH']])
 
@@ -90,13 +96,14 @@ def main():
             old_library_path = ''
         env['LIBRARY_PATH'] = '{0}{1}'.format(paths.curl_prebuilt('lib'), old_library_path)
 
-    env['DESTDIR'] = paths.out_path()
+    env['DESTDIR'] = OUT_PATH_PACKAGE
 
     #
     # Initialize directories
     #
 
     paths.out_path().mkdir(exist_ok=True)
+    OUT_PATH_PACKAGE.mkdir(exist_ok=True)
 
     # We take DIST_DIR through an environment variable rather than an
     # argument to match the interface for traditional Android builds.
@@ -109,25 +116,12 @@ def main():
     dist_dir.mkdir(exist_ok=True)
 
     #
-    # Apply patches
+    # Setup source files
     #
 
-    for filepath in sorted(paths.patches_path().glob('rustc-*')):
-        with filepath.open(mode='rb') as file:
-            p = subprocess.Popen(['patch', '-p1', '-N', '-r', '-'],
-                                 cwd=paths.rustc_path(), stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE)
-            out, _ = p.communicate(file.read())
-
-            # Print output for logging purposes.
-            print("Applying patch: " + filepath.as_posix())
-            print(out)
-
-            if p.returncode != 0 and not args.no_patch_abort:
-                print("Build failed when applying patch {}"
-                        .format(filepath.as_posix()))
-                print("If developing locally, try the --no-patch-abort flag")
-                sys.exit(p.returncode)
+    source_manager.setup_files(
+      paths.rustc_path(), OUT_PATH_RUSTC, paths.patches_path(),
+      no_patch_abort=args.no_patch_abort)
 
     #
     # Configure Rust
@@ -136,35 +130,40 @@ def main():
     # Cargo.lock
     #
 
-    config_toml.configure()
+    # TODO: Remove this argument when paths.py gets updated
+    config_toml.configure(OUT_PATH_RUSTC)
 
     # Trigger bootstrap to trigger vendoring
     #
     # Call is not checked because this is *expected* to fail - there isn't a
     # user facing way to directly trigger the bootstrap, so we give it a
     # no-op to perform that will require it to write out the cargo config.
-    subprocess.call([paths.rustc_path('x.py'), '--help'],
-                    cwd=paths.rustc_path(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.call([OUT_PATH_RUSTC / 'x.py', '--help'],
+                    cwd=OUT_PATH_RUSTC, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # Offline fetch to regenerate lockfile
     res = subprocess.check_output(
         [paths.rust_prebuilt('bin', 'cargo'), 'fetch', '--offline'],
-        cwd=paths.rustc_path(), env=env)
+        cwd=OUT_PATH_RUSTC, env=env)
+
+    print("Marker 3")
 
     #
     # Build
     #
-    ec = subprocess.Popen([paths.rustc_path('x.py'), '--stage', '3', 'install'],
-                          cwd=paths.rustc_path(), env=env).wait()
+    ec = subprocess.Popen([OUT_PATH_RUSTC / 'x.py', '--stage', '3', 'install'],
+                          cwd=OUT_PATH_RUSTC, env=env).wait()
     if ec != 0:
         print("Build stage failed with error {}".format(ec))
         sys.exit(ec)
+
+    print("Maker 4")
 
     # Install sources
     if build_platform.system() == 'linux':
         shutil.rmtree(paths.stdlib_srcs(), ignore_errors=True)
         for stdlib in STDLIB_SOURCES:
-            shutil.copytree(paths.rustc_path(stdlib), paths.stdlib_srcs(stdlib))
+            shutil.copytree(OUT_PATH_RUSTC / stdlib, paths.stdlib_srcs(stdlib))
 
     # Fixup
     # The Rust build doesn't have an option to auto-strip binaries, so we do
@@ -173,22 +172,22 @@ def main():
     # We don't attempt to strip anything under rustlib/ since these include
     # both debug symbols which we may want to link into user code and Rust
     # metadata needed at build time.
-    libs = list(paths.out_path('lib').glob('*.so'))
+    libs = list((OUT_PATH_PACKAGE / 'lib').glob('*.so'))
     subprocess.check_call(['strip', '-S'] + libs + [
-        paths.out_path('bin', 'rustc'),
-        paths.out_path('bin', 'cargo'),
-        paths.out_path('bin', 'rustdoc')])
+        OUT_PATH_PACKAGE / 'bin' / 'rustc',
+        OUT_PATH_PACKAGE / 'bin' / 'cargo',
+        OUT_PATH_PACKAGE / 'bin' / 'rustdoc'])
 
     # Install the libc++ library to lib64/
     if build_platform.system() == 'darwin':
         libcxx_name = 'libc++.dylib'
     else:
         libcxx_name = 'libc++.so.1'
-    lib64_path = paths.out_path('lib64')
+    lib64_path = OUT_PATH_PACKAGE / 'lib64'
     if not lib64_path.exists():
         lib64_path.mkdir()
     shutil.copy2(paths.cxx_linker_path(libcxx_name),
-                 paths.out_path('lib64', libcxx_name))
+                 OUT_PATH_PACKAGE / 'lib64' / libcxx_name)
 
     # Some stdlib crates might include Android.mk or Android.bp files.
     # If they do, filter them out.
@@ -199,7 +198,7 @@ def main():
     # Dist
     tarball_path = dist_dir / 'rust-{0}.tar.gz'.format(build_name)
     subprocess.check_call(['tar', 'czf', tarball_path, '.'],
-                          cwd=paths.out_path())
+        cwd=OUT_PATH_PACKAGE)
 
 if __name__ == '__main__':
     main()
