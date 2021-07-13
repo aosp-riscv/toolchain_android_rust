@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c9fa1b15_8cca8b4c",
+        "filename": "source_manager.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 112,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-07-13T08:54:31Z",
+      "side": 1,
+      "message": "newline? I always feel like this ends up being an issue the next time someone touches the file.",
+      "revId": "3b9c34d55401a8a51f1a16cd91998fe99f858b14",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
