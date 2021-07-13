@@ -5,21 +5,21 @@ Subject: [PATCH] Add Android ARM64 to supported list of sanitize targets.
 
 Change-Id: I3c8210a0d7d1553a537d6a66b1ca96a75632070d
 ---
- src/librustc_session/session.rs | 1 +
+ src/tools/compiletest/src/util.rs | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/compiler/rustc_session/src/session.rs b/compiler/rustc_session/src/session.rs
-index fcd5dab94..19364f6a8 100644
---- a/compiler/rustc_session/src/session.rs
-+++ b/compiler/rustc_session/src/session.rs
-@@ -1359,6 +1359,7 @@ fn validate_commandline_args_with_session_available(sess: &Session) {
- 
-     const ASAN_SUPPORTED_TARGETS: &[&str] = &[
-         "aarch64-fuchsia",
-+        "aarch64-linux-android",
-         "aarch64-unknown-linux-gnu",
-         "x86_64-apple-darwin",
-         "x86_64-fuchsia",
--- 
-2.28.0.681.g6f77f65b4e-goog
+diff --git a/src/tools/compiletest/src/util.rs b/src/tools/compiletest/src/util.rs
+index 7dbd70948b..507543902a 100644
+--- a/src/tools/compiletest/src/util.rs
++++ b/src/tools/compiletest/src/util.rs
+@@ -85,6 +85,7 @@ const ARCH_TABLE: &[(&str, &str)] = &[
+ pub const ASAN_SUPPORTED_TARGETS: &[&str] = &[
+     "aarch64-apple-darwin",
+     "aarch64-fuchsia",
++    "aarch64-linux-android",
+     "aarch64-unknown-linux-gnu",
+     "x86_64-apple-darwin",
+     "x86_64-fuchsia",
+--
+2.32.0.93.g670b81a890-goog
 

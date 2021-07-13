@@ -16,7 +16,7 @@ index cf406e8ddb..bdefd6b70b 100644
 @@ -191,12 +191,12 @@ impl<'cfg> PathSource<'cfg> {
          let index = repo
              .index()
-             .chain_err(|| format!("failed to open git index at {}", repo.path().display()))?;
+             .with_context(|| format!("failed to open git index at {}", repo.path().display()))?;
 -        let repo_root = repo.workdir().ok_or_else(|| {
 -            anyhow::format_err!(
 -                "did not expect repo at {} to be bare",
@@ -32,6 +32,6 @@ index cf406e8ddb..bdefd6b70b 100644
          let repo_relative_path = match paths::strip_prefix_canonical(root, repo_root) {
              Ok(p) => p,
              Err(e) => {
--- 
+--
 2.28.0.681.g6f77f65b4e-goog
 
