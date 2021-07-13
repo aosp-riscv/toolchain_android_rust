@@ -6,27 +6,27 @@ Subject: [PATCH] Add remaining set of android archs to the list of sanitizer
 
 Change-Id: I9754b7a8263313727ef5684431d54c3376225264
 ---
- compiler/rustc_session/src/session.rs | 5 +++++
+ src/tools/compiletest/src/util.rs | 5 +++++
  1 file changed, 5 insertions(+)
 
-diff --git a/compiler/rustc_session/src/session.rs b/compiler/rustc_session/src/session.rs
-index 2bf8090ab9..fed4dc5591 100644
---- a/compiler/rustc_session/src/session.rs
-+++ b/compiler/rustc_session/src/session.rs
-@@ -1497,8 +1497,13 @@ fn validate_commandline_args_with_session_available(sess: &Session) {
-         "aarch64-fuchsia",
-         "aarch64-linux-android",
-         "aarch64-unknown-linux-gnu",
-+        "arm-linux-androideabi",
-+        "armv7-linux-androideabi",
-+        "i686-linux-android",
-+        "i686-unknown-linux-gnu",
-         "x86_64-apple-darwin",
-         "x86_64-fuchsia",
-+        "x86_64-linux-android",
-         "x86_64-unknown-freebsd",
-         "x86_64-unknown-linux-gnu",
-     ];
--- 
-2.29.2.729.g45daf8777d-goog
+diff --git a/src/tools/compiletest/src/util.rs b/src/tools/compiletest/src/util.rs
+index 7dbd70948b..c47effdf2e 100644
+--- a/src/tools/compiletest/src/util.rs
++++ b/src/tools/compiletest/src/util.rs
+@@ -86,8 +86,13 @@ pub const ASAN_SUPPORTED_TARGETS: &[&str] = &[
+     "aarch64-apple-darwin",
+     "aarch64-fuchsia",
+     "aarch64-unknown-linux-gnu",
++    "arm-linux-androideabi",
++    "armv7-linux-androideabi",
++    "i686-linux-android",
++    "i686-unknown-linux-gnu",
+     "x86_64-apple-darwin",
+     "x86_64-fuchsia",
++    "x86_64-linux-android",
+     "x86_64-unknown-freebsd",
+     "x86_64-unknown-linux-gnu",
+ ];
+--
+2.32.0.93.g670b81a890-goog
 
