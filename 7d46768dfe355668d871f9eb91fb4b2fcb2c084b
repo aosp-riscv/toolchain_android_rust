@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "15f63e44_f0f21145",
+        "filename": "do_build.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-07-19T19:53:12Z",
+      "side": 1,
+      "message": "This one should maybe specify python3 in case someone manually executes this file instead of `build.py`. Or do you think that we should accept that python \u003d\u003d python3 for any system we care about going forward (and any python \u003d\u003d python2 system is going to crash outright)?",
+      "range": {
+        "startLine": 1,
+        "startChar": 15,
+        "endLine": 1,
+        "endChar": 21
+      },
+      "revId": "7d46768dfe355668d871f9eb91fb4b2fcb2c084b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
