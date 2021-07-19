@@ -18,7 +18,7 @@ import build_platform
 
 THIS_DIR: Path = Path(__file__).parent.resolve()
 
-STAGE0_RUST_VERSION = '1.51.0'
+STAGE0_RUST_VERSION = '1.52.1'
 CLANG_REVISION = 'r416183b'
 
 
