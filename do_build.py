@@ -90,7 +90,7 @@ def main():
 
     # Apply patches
     for filename in sorted(glob.glob(paths.patches_path('rustc-*'))):
-        with open(filename, 'r') as file:
+        with open(filename, 'rb') as file:
             p = subprocess.Popen(['patch', '-p1', '-N', '-r', '-'],
                                  cwd=paths.rustc_path(), stdin=subprocess.PIPE,
                                  stdout=subprocess.PIPE)
@@ -171,7 +171,7 @@ def main():
     if build_platform.system() == 'darwin':
         libcxx_name = 'libc++.dylib'
     else:
-        libcxx_name = 'libc++.so'
+        libcxx_name = 'libc++.so.1'
     lib64_path = paths.out_path('lib64')
     if not os.path.exists(lib64_path):
         os.makedirs(lib64_path)
