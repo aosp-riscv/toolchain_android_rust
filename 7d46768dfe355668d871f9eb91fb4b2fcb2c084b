@@ -22,6 +22,30 @@
       },
       "revId": "7d46768dfe355668d871f9eb91fb4b2fcb2c084b",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "5a51dd9e_f445ba01",
+        "filename": "do_build.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-07-19T19:54:29Z",
+      "side": 1,
+      "message": "Just saw the followup patch that fixes this. I think we\u0027re good here. This is really the least invasive way of doing things.",
+      "parentUuid": "15f63e44_f0f21145",
+      "range": {
+        "startLine": 1,
+        "startChar": 15,
+        "endLine": 1,
+        "endChar": 21
+      },
+      "revId": "7d46768dfe355668d871f9eb91fb4b2fcb2c084b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
