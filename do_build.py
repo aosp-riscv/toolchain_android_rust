@@ -146,8 +146,6 @@ def main():
         [paths.rust_prebuilt('bin', 'cargo'), 'fetch', '--offline'],
         cwd=OUT_PATH_RUSTC, env=env)
 
-    print("Marker 3")
-
     #
     # Build
     #
@@ -156,8 +154,6 @@ def main():
     if ec != 0:
         print("Build stage failed with error {}".format(ec))
         sys.exit(ec)
-
-    print("Maker 4")
 
     # Install sources
     if build_platform.system() == 'linux':
