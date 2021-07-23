@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "536223d4_a56ff391",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-07-23T21:19:29Z",
+      "side": 1,
+      "message": "I want to say no to silencing this warning because it could catch other build misconfigurations, but with how loud --fuse-ld\u003dlld\u0027s warning is, I\u0027m pretty sure we\u0027d never see them in the current configuration.",
+      "revId": "ce3adeb544cd987267bedcd795fe0eb586b7e27a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
