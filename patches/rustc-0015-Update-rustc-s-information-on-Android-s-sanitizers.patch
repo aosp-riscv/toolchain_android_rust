@@ -1,0 +1,125 @@
+From 4e5a87ae887c8ba9ec32ba192696e343c92fe39b Mon Sep 17 00:00:00 2001
+From: Chris Wailes <chriswailes@google.com>
+Date: Mon, 26 Jul 2021 16:30:35 -0700
+Subject: [PATCH] Update rustc's information on Android's sanitizers
+
+This patch will update sanitizer support definitions for Android inside
+the compiler as well as adjusts the logic to make sure no pre-built
+sanitizer runtime libraries are emitted as linktime requirements.
+
+Bug: 194400612
+Change-Id: I67cf17db149fbb19ef2cf9ab4e166218fded78e5
+---
+ compiler/rustc_codegen_ssa/src/back/link.rs          | 12 +++++++-----
+ compiler/rustc_target/src/spec/android_base.rs       |  4 +++-
+ .../rustc_target/src/spec/i686_unknown_linux_gnu.rs  |  3 ++-
+ compiler/rustc_target/src/spec/mod.rs                |  3 +++
+ src/tools/compiletest/src/util.rs                    |  7 ++++++-
+ 5 files changed, 21 insertions(+), 8 deletions(-)
+
+diff --git a/compiler/rustc_codegen_ssa/src/back/link.rs b/compiler/rustc_codegen_ssa/src/back/link.rs
+index ea75943d6f..5383613db0 100644
+--- a/compiler/rustc_codegen_ssa/src/back/link.rs
++++ b/compiler/rustc_codegen_ssa/src/back/link.rs
+@@ -873,11 +873,13 @@ fn link_sanitizers(sess: &Session, crate_type: CrateType, linker: &mut dyn Linke
+     // both executables and dynamic shared objects. Everywhere else the runtimes
+     // are currently distributed as static liraries which should be linked to
+     // executables only.
+-    let needs_runtime = match crate_type {
+-        CrateType::Executable => true,
+-        CrateType::Dylib | CrateType::Cdylib | CrateType::ProcMacro => sess.target.is_like_osx,
+-        CrateType::Rlib | CrateType::Staticlib => false,
+-    };
++    let needs_runtime =
++        !sess.target.is_like_android &&
++        match crate_type {
++            CrateType::Executable => true,
++            CrateType::Dylib | CrateType::Cdylib | CrateType::ProcMacro => sess.target.is_like_osx,
++            CrateType::Rlib | CrateType::Staticlib => false,
++        };
+ 
+     if !needs_runtime {
+         return;
+diff --git a/compiler/rustc_target/src/spec/android_base.rs b/compiler/rustc_target/src/spec/android_base.rs
+index aaf81648c5..71b8182824 100644
+--- a/compiler/rustc_target/src/spec/android_base.rs
++++ b/compiler/rustc_target/src/spec/android_base.rs
+@@ -1,8 +1,9 @@
+-use crate::spec::{LinkerFlavor, TargetOptions};
++use crate::spec::{LinkerFlavor, SanitizerSet, TargetOptions};
+ 
+ pub fn opts() -> TargetOptions {
+     let mut base = super::linux_gnu_base::opts();
+     base.os = "android".to_string();
++    base.is_like_android = true;
+     // Many of the symbols defined in compiler-rt are also defined in libgcc.
+     // Android's linker doesn't like that by default.
+     base.pre_link_args
+@@ -12,6 +13,7 @@ pub fn opts() -> TargetOptions {
+     base.dwarf_version = Some(2);
+     base.position_independent_executables = true;
+     base.has_elf_tls = false;
++    base.supported_sanitizers = SanitizerSet::ADDRESS;
+     // This is for backward compatibility, see https://github.com/rust-lang/rust/issues/49867
+     // for context. (At that time, there was no `-C force-unwind-tables`, so the only solution
+     // was to always emit `uwtable`).
+diff --git a/compiler/rustc_target/src/spec/i686_unknown_linux_gnu.rs b/compiler/rustc_target/src/spec/i686_unknown_linux_gnu.rs
+index 165505ee73..4c1203cd00 100644
+--- a/compiler/rustc_target/src/spec/i686_unknown_linux_gnu.rs
++++ b/compiler/rustc_target/src/spec/i686_unknown_linux_gnu.rs
+@@ -1,9 +1,10 @@
+-use crate::spec::{LinkerFlavor, StackProbeType, Target};
++use crate::spec::{LinkerFlavor, SanitizerSet, StackProbeType, Target};
+ 
+ pub fn target() -> Target {
+     let mut base = super::linux_gnu_base::opts();
+     base.cpu = "pentium4".to_string();
+     base.max_atomic_width = Some(64);
++    base.supported_sanitizers = SanitizerSet::ADDRESS;
+     base.pre_link_args.entry(LinkerFlavor::Gcc).or_default().push("-m32".to_string());
+     // don't use probe-stack=inline-asm until rust#83139 and rust#84667 are resolved
+     base.stack_probes = StackProbeType::Call;
+diff --git a/compiler/rustc_target/src/spec/mod.rs b/compiler/rustc_target/src/spec/mod.rs
+index 2af4669344..10e830a8c8 100644
+--- a/compiler/rustc_target/src/spec/mod.rs
++++ b/compiler/rustc_target/src/spec/mod.rs
+@@ -1079,6 +1079,8 @@ pub struct TargetOptions {
+     pub is_like_fuchsia: bool,
+     /// Whether a target toolchain is like WASM.
+     pub is_like_wasm: bool,
++    /// Whether a target toolchain is like Android.
++    pub is_like_android: bool,
+     /// Version of DWARF to use if not using the default.
+     /// Useful because some platforms (osx, bsd) only want up to DWARF2.
+     pub dwarf_version: Option<u32>,
+@@ -1302,6 +1304,7 @@ impl Default for TargetOptions {
+             is_like_msvc: false,
+             is_like_fuchsia: false,
+             is_like_wasm: false,
++            is_like_android: false,
+             dwarf_version: None,
+             linker_is_gnu: false,
+             allows_weak_linkage: true,
+diff --git a/src/tools/compiletest/src/util.rs b/src/tools/compiletest/src/util.rs
+index 7dbd70948b..6ddedef8fc 100644
+--- a/src/tools/compiletest/src/util.rs
++++ b/src/tools/compiletest/src/util.rs
+@@ -85,9 +85,14 @@ const ARCH_TABLE: &[(&str, &str)] = &[
+ pub const ASAN_SUPPORTED_TARGETS: &[&str] = &[
+     "aarch64-apple-darwin",
+     "aarch64-fuchsia",
++    "aarch64-linux-android",
+     "aarch64-unknown-linux-gnu",
++    "arm-linux-androideabi",
++    "armv7-linux-androideabi",
++    "i686-linux-android",
++    "i686-unknown-linux-gnu",
+     "x86_64-apple-darwin",
+-    "x86_64-fuchsia",
++    "x86_64-fuchsia","x86_64-linux-android",
+     "x86_64-unknown-freebsd",
+     "x86_64-unknown-linux-gnu",
+ ];
+-- 
+2.32.0.432.gabb21c7263-goog
+
