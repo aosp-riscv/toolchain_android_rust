@@ -34,6 +34,29 @@
       "parentUuid": "536223d4_a56ff391",
       "revId": "ce3adeb544cd987267bedcd795fe0eb586b7e27a",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1f5dfcde_d9592072",
+        "filename": "config_toml.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-07-26T23:31:44Z",
+      "side": 1,
+      "message": "The real culprit is that we\u0027re using a wrapper for every clang invocation, whether CC or LD, and we\u0027re hardcoding the `-fuse-ld\u003dlld` into that directly. TBH, this would/could be solved if we default to LLD with our LLVM toolchain. Alternatively, there is a `use_lld` property in `toolchain/rustc/src/bootstrap/config.rs` where they say you can set this in your `config.toml` (which we generate in `toolchain/android_rust/config_toml.py`). Perhaps that\u0027s the right way to move forward here.",
+      "range": {
+        "startLine": 76,
+        "startChar": 13,
+        "endLine": 76,
+        "endChar": 24
+      },
+      "revId": "ce3adeb544cd987267bedcd795fe0eb586b7e27a",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
