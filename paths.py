@@ -56,7 +56,7 @@ CURL_PREBUILT_PATH:        Path = PREBUILT_PATH / 'android-emulator-build' / 'cu
 NDK_PATH:         Path = WORKSPACE_PATH / 'toolchain' / 'prebuilts' / 'ndk' / 'r20'
 NDK_SYSROOT_PATH: Path = NDK_PATH / 'sysroot'
 NDK_INCLUDE_PATH: Path = NDK_SYSROOT_PATH / 'usr' / 'include'
-NDK_LLVM_PATH:    Path = NDK_PATH / 'toolchains' / 'llvm' / 'prebuilts' / 'linux-x86_64'
+NDK_LLVM_PATH:    Path = NDK_PATH / 'toolchains' / 'llvm' / 'prebuilt' / 'linux-x86_64'
 
 def target_includes_path(target) -> Path:
     """Generates a path relative to the target-specific NDK include dir."""
@@ -77,11 +77,6 @@ def plat_ndk_sysroot_path(target) -> Path:
     does not look through.
     """
     return NDK_PATH / 'platforms' / 'android-29' / ('arch-' + extract_arch(target))
-
-
-def gcc_libdir_path(target) -> Path:
-    """Locates the directory with the gcc library target prebuilts."""
-    return NDK_LLVM_PATH / 'lib' / 'gcc' / normalize_target(target) / '4.9.x'
 
 
 def extract_arch(target):

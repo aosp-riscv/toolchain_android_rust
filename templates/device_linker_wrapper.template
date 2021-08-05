@@ -1,0 +1,2 @@
+#!/bin/sh
+$real_cc $${*/"-lgcc"} -fuse-ld=lld --target=$target -rtlib=compiler-rt -lunwind --sysroot=$sysroot -L$sys_dir
