@@ -4,6 +4,7 @@ ninja = true
 targets = "AArch64;ARM;X86"
 experimental-targets = ""
 use-libcxx = true
+ldflags = "$llvm_ldflags"
 [build]
 target = $all_targets
 cargo = "$cargo"
@@ -26,5 +27,6 @@ sysconfdir = "etc"
 channel = "dev"
 remap-debuginfo = true
 deny-warnings = false
+
 $host_configs
 $device_configs
