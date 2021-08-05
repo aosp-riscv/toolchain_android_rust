@@ -1,0 +1,2 @@
+#!/bin/sh
+$real_cc $$* $ld_option --target=$target $sysroot_flags

@@ -16,155 +16,137 @@
 import os
 import subprocess
 import stat
+from string import Template
 
 import build_platform
 from paths import *
 
-host_targets = [build_platform.triple()] + build_platform.alt_triples()
-device_targets = ['aarch64-linux-android', 'armv7-linux-androideabi',
+
+HOST_TARGETS: list[str] = [build_platform.triple()] + build_platform.alt_triples()
+DEVICE_TARGETS: list[str] = ['aarch64-linux-android', 'armv7-linux-androideabi',
                   'x86_64-linux-android', 'i686-linux-android']
-all_targets = host_targets + device_targets
+ALL_TARGETS: list[str] = HOST_TARGETS + DEVICE_TARGETS
+
+CONFIG_TOML_TEMPLATE:       Path = TEMPLATES_PATH / 'config.toml.template'
+DEVICE_CC_WRAPPER_TEMPLATE: Path = TEMPLATES_PATH / 'device_cc_wrapper.template'
+DEVICE_TARGET_TEMPLATE:     Path = TEMPLATES_PATH / 'device_target.template'
+HOST_CC_WRAPPER_TEMPLATE:   Path = TEMPLATES_PATH / 'host_cc_wrapper.template'
+HOST_CXX_WRAPPER_TEMPLATE:  Path = TEMPLATES_PATH / 'host_cxx_wrapper.template'
+HOST_TARGET_TEMPLATE:       Path = TEMPLATES_PATH / 'host_target.template'
+
+CARGO_PATH:  Path = RUST_PREBUILT_PATH / 'bin' / 'cargo'
+RUSTC_PATH:  Path = RUST_PREBUILT_PATH / 'bin' / 'rustc'
+CC_PATH:     Path = LLVM_PREBUILT_PATH / 'bin' / 'clang'
+CXX_PATH:    Path = LLVM_PREBUILT_PATH / 'bin' / 'clang++'
+AR_PATH:     Path = LLVM_PREBUILT_PATH / 'bin' / 'llvm-ar'
+RANLIB_PATH: Path = LLVM_PREBUILT_PATH / 'bin' / 'llvm-ranlib'
+CXXSTD_PATH: Path = LLVM_PREBUILT_PATH / 'include' / 'c++' / 'v1'
+
+# Add the path at which libc++ can be found in Android checkouts
+CXX_LINKER_FLAGS: str = ' -Wl,-rpath,'
+if build_platform.system() == 'darwin':
+    CXX_LINKER_FLAGS += '@loader_path/../lib64'
+else:
+    CXX_LINKER_FLAGS += '\\$ORIGIN/../lib64'
+# Add the path at which libc++ can be found during the build
+CXX_LINKER_FLAGS += ' -Wl,-rpath,' + LLVM_CXX_RUNTIME_PATH.as_posix()
+
+LD_OPTIONS: str = None
+if build_platform.system() == 'linux':
+    LD_OPTIONS = '-fuse-ld=lld -Wno-unused-command-line-argument'
+else:
+    LD_OPTIONS = ''
 
 
-def configure(rustc_path):
+def host_config(target: str, sysroot_flags: str):
+    cc_wrapper_name  = OUT_PATH_WRAPPERS / ('clang-%s' % target)
+    cxx_wrapper_name = OUT_PATH_WRAPPERS / ('clang++-%s' % target)
+
+    with open(HOST_CC_WRAPPER_TEMPLATE, 'r') as template_file:
+        template = Template(template_file.read())
+        with open(cc_wrapper_name, 'w') as wrapper_file:
+            wrapper_file.write(
+                template.substitute(
+                    real_cc=CC_PATH,
+                    ld_option=LD_OPTIONS,
+                    target=target,
+                    sysroot_flags=sysroot_flags))
+    s = os.stat(cc_wrapper_name)
+    os.chmod(cc_wrapper_name, s.st_mode | stat.S_IEXEC)
+
+    with open(HOST_CXX_WRAPPER_TEMPLATE, 'r') as template_file:
+        template = Template(template_file.read())
+        with open(cxx_wrapper_name, 'w') as wrapper_file:
+            wrapper_file.write(
+                template.substitute(
+                    real_cxx=CXX_PATH,
+                    ld_option=LD_OPTIONS,
+                    target=target,
+                    sysroot_flags=sysroot_flags,
+                    cxxstd=CXXSTD_PATH,
+                    cxx_linker_flags=CXX_LINKER_FLAGS))
+    s = os.stat(cxx_wrapper_name)
+    os.chmod(cxx_wrapper_name, s.st_mode | stat.S_IEXEC)
+
+    with open(HOST_TARGET_TEMPLATE, 'r') as template_file:
+        return Template(template_file.read()).substitute(
+            target=target,
+            cc=cc_wrapper_name,
+            cxx=cxx_wrapper_name,
+            ar=AR_PATH,
+            ranlib=RANLIB_PATH)
+
+
+def device_config(target):
+    cc_wrapper_name = OUT_PATH_WRAPPERS / ('clang-%s' % target)
+
+    with open(DEVICE_CC_WRAPPER_TEMPLATE, 'r') as template_file:
+        template = Template(template_file.read())
+        with open(cc_wrapper_name, 'w') as wrapper_file:
+            wrapper_file.write(
+                template.substitute(
+                    real_cc=CC_PATH,
+                    sysroot=plat_ndk_sysroot_path(target),
+                    ndk_includes=NDK_INCLUDE_PATH,
+                    target_includes=target_includes_path(target),
+                    target=target,
+                    gcc_libdir=gcc_libdir_path(target),
+                    sys_dir=plat_ndk_llvm_libs_path(target)))
+    s = os.stat(cc_wrapper_name)
+    os.chmod(cc_wrapper_name, s.st_mode | stat.S_IEXEC)
+
+    with open(DEVICE_TARGET_TEMPLATE, 'r') as template_file:
+        return Template(template_file.read()).substitute(
+            target=target, cc=cc_wrapper_name, ar=AR_PATH)
+
+
+def configure():
     """Generates config.toml for the rustc build."""
-    with (rustc_path / 'config.toml').open('w') as config_toml:
-        cargo  = RUST_PREBUILT_PATH / 'bin' / 'cargo'
-        rustc  = RUST_PREBUILT_PATH / 'bin' / 'rustc'
-        cc     = LLVM_PREBUILT_PATH / 'bin' / 'clang'
-        cxx    = LLVM_PREBUILT_PATH / 'bin' / 'clang++'
-        ar     = LLVM_PREBUILT_PATH / 'bin' / 'llvm-ar'
-        ranlib = LLVM_PREBUILT_PATH / 'bin' / 'llvm-ranlib'
-        cxxstd = LLVM_PREBUILT_PATH / 'include' / 'c++' / 'v1'
+    sysroot = None
+    # Apple removed the normal sysroot at / on Mojave+, so we need
+    # to go hunt for it on OSX
+    # On pre-Mojave, this command will output the empty string.
+    if build_platform.system() == 'darwin':
+        output = subprocess.check_output(
+            ['xcrun', '--sdk', 'macosx', '--show-sdk-path'])
+        sysroot = output.rstrip().decode('utf-8')
+    sysroot_flags = ("--sysroot " + sysroot) if sysroot else ""
 
-        # Add the path at which libc++ can be found in Android checkouts
-        cxx_linker_flags = ' -Wl,-rpath,'
-        if build_platform.system() == 'darwin':
-            cxx_linker_flags += '@loader_path/../lib64'
-        else:
-            cxx_linker_flags += '\\$ORIGIN/../lib64'
-        # Add the path at which libc++ can be found during the build
-        cxx_linker_flags += ' -Wl,-rpath,' + LLVM_CXX_RUNTIME_PATH.as_posix()
+    host_configs = '\n'.join(
+        [host_config(target, sysroot_flags) for target in HOST_TARGETS])
+    device_configs = '\n'.join(
+        [device_config(target) for target in DEVICE_TARGETS])
 
-        def host_config(target):
-            wrapper_name = TOOLCHAIN_PATH / ('clang-%s' % target)
-            cxx_wrapper_name = TOOLCHAIN_PATH / ('clang++-%s' % target)
+    all_targets = '[' + ','.join(
+        ['"' + target + '"' for target in ALL_TARGETS]) + ']'
 
-            sysroot = None
-            # Apple removed the normal sysroot at / on Mojave+, so we need
-            # to go hunt for it on OSX
-            # On pre-Mojave, this command will output the empty string.
-            if build_platform.system() == 'darwin':
-                output = subprocess.check_output(['xcrun', '--sdk', 'macosx',
-                                                  '--show-sdk-path'])
-                sysroot = output.rstrip().decode('utf-8')
-
-            if sysroot:
-                sysroot_flags = "--sysroot " + sysroot
-            else:
-                sysroot_flags = ""
-
-            ld_option = None
-            if build_platform.system() == 'linux':
-                ld_option = '-fuse-ld=lld -Wno-unused-command-line-argument'
-            else:
-                ld_option = ''
-
-            with open(wrapper_name, 'w') as f:
-                f.write("""\
-#!/bin/sh
-{real_cc} $* {ld_option} --target={target} {sysroot_flags}
-""".format(real_cc=cc, ld_option=ld_option, target=target, sysroot_flags=sysroot_flags))
-
-            with open(cxx_wrapper_name, 'w') as f:
-                f.write("""\
-#!/bin/sh
-{real_cxx} -I{cxxstd} $* {ld_option} --target={target} {sysroot_flags} {cxx_linker_flags} \
-        -stdlib=libc++
-""".format(real_cxx=cxx, ld_option=ld_option, target=target, sysroot_flags=sysroot_flags,
-           cxxstd=cxxstd,
-           cxx_linker_flags=cxx_linker_flags))
-
-            s = os.stat(wrapper_name)
-            os.chmod(wrapper_name, s.st_mode | stat.S_IEXEC)
-            s = os.stat(cxx_wrapper_name)
-            os.chmod(cxx_wrapper_name, s.st_mode | stat.S_IEXEC)
-            return """\
-[target.{target}]
-cc = "{cc}"
-cxx = "{cxx}"
-ar = "{ar}"
-ranlib = "{ranlib}"
-linker = "{cxx}"
-""".format(cc=wrapper_name, cxx=cxx_wrapper_name, ar=ar, ranlib=ranlib, target=target)
-
-        def device_config(target):
-            wrapper_name = TOOLCHAIN_PATH / ('clang-%s' % target)
-            with open(wrapper_name, 'w') as f:
-                f.write("""\
-#!/bin/sh
-{real_cc} $* -fuse-ld=lld -Wno-unused-command-line-argument --target={target} \
-        --sysroot={sysroot} -L{gcc_libdir} -L{sys_dir} -isystem {ndk_includes} \
-        -isystem {target_includes}
-""".format(real_cc=cc,
-           sysroot=plat_ndk_sysroot_path(target),
-           ndk_includes=NDK_INCLUDE_PATH,
-           target_includes=target_includes_path(target),
-           target=target,
-           gcc_libdir=gcc_libdir_path(target),
-           sys_dir=plat_ndk_llvm_libs_path(target)))
-
-            s = os.stat(wrapper_name)
-            os.chmod(wrapper_name, s.st_mode | stat.S_IEXEC)
-            return """\
-[target.{target}]
-cc="{cc}"
-ar="{ar}"
-""".format(ar=ar, cc=wrapper_name, target=target)
-
-        host_configs = '\n'.join(
-            [host_config(target) for target in host_targets])
-        device_configs = '\n'.join(
-            [device_config(target) for target in device_targets])
-
-        all_targets_config = '[' + ','.join(
-            ['"' + target + '"' for target in all_targets]) + ']'
-        config_toml.write("""\
-changelog-seen = 2
-[llvm]
-ninja = true
-targets = "AArch64;ARM;X86"
-experimental-targets = ""
-use-libcxx = true
-[build]
-target = {all_targets_config}
-cargo = "{cargo}"
-rustc = "{rustc}"
-verbose = 1
-profiler = true
-docs = false
-submodules = false
-locked-deps = true
-vendor = true
-full-bootstrap = true
-extended = true
-tools = ["cargo", "clippy", "rustfmt", "rust-analyzer"]
-cargo-native-static = true
-[install]
-prefix = "/"
-sysconfdir = "etc"
-[rust]
-channel = "dev"
-remap-debuginfo = true
-deny-warnings = false
-{host_configs}
-{device_configs}
-""".format(cargo=cargo,
-           rustc=rustc,
-           cc=cc,
-           cxx=cxx,
-           ar=ar,
-           ranlib=ranlib,
-           host_configs=host_configs,
-           device_configs=device_configs,
-           all_targets_config=all_targets_config))
+    with open(CONFIG_TOML_TEMPLATE, 'r') as template_file:
+        template = Template(template_file.read())
+        with (OUT_PATH_RUST_SOURCE / 'config.toml').open('w') as config_toml:
+            config_toml.write(
+                template.substitute(
+                    all_targets=all_targets,
+                    cargo=CARGO_PATH,
+                    rustc=RUSTC_PATH,
+                    host_configs=host_configs,
+                    device_configs=device_configs))

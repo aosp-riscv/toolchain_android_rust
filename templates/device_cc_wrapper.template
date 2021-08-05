@@ -1,0 +1,3 @@
+#!/bin/sh
+$real_cc $$* -fuse-ld=lld -Wno-unused-command-line-argument --target=$target --sysroot=$sysroot \
+  -L$gcc_libdir -L$sys_dir -isystem $ndk_includes -isystem $target_includes

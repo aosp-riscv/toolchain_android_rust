@@ -20,15 +20,18 @@ STAGE0_RUST_VERSION = '1.54.0'
 CLANG_REVISION = 'r416183b'
 CLANG_NAME: str = 'clang-{0}'.format(CLANG_REVISION)
 
-TOOLCHAIN_PATH: Path = Path(__file__).parent.resolve()
-WORKSPACE_PATH: Path = (TOOLCHAIN_PATH / '..' / '..').resolve()
-RUSTC_PATH:     Path = (TOOLCHAIN_PATH / '..' / 'rustc').resolve()
-PATCHES_PATH:   Path = (TOOLCHAIN_PATH / 'patches').resolve()
+TOOLCHAIN_PATH:   Path = Path(__file__).parent.resolve()
+WORKSPACE_PATH:   Path = (TOOLCHAIN_PATH / '..' / '..').resolve()
+RUST_SOURCE_PATH: Path = (TOOLCHAIN_PATH / '..' / 'rustc').resolve()
+
+PATCHES_PATH:   Path = TOOLCHAIN_PATH / 'patches'
+TEMPLATES_PATH: Path = TOOLCHAIN_PATH / 'templates'
 
 OUT_PATH:             Path = WORKSPACE_PATH / 'out'
-OUT_PATH_RUSTC:       Path = OUT_PATH / 'rustc'
+OUT_PATH_RUST_SOURCE: Path = OUT_PATH / 'rustc'
 OUT_PATH_PACKAGE:     Path = OUT_PATH / 'package'
 OUT_PATH_STDLIB_SRCS: Path = OUT_PATH_PACKAGE / 'src' / 'stdlibs'
+OUT_PATH_WRAPPERS:    Path = OUT_PATH / 'wrappers'
 
 PREBUILT_PATH:         Path = WORKSPACE_PATH / 'prebuilts'
 RUST_PREBUILT_PATH:    Path = (PREBUILT_PATH / 'rust' / build_platform.prebuilt() / STAGE0_RUST_VERSION)

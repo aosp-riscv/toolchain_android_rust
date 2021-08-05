@@ -101,6 +101,7 @@ def main():
 
     OUT_PATH.mkdir(exist_ok=True)
     OUT_PATH_PACKAGE.mkdir(exist_ok=True)
+    OUT_PATH_WRAPPERS.mkdir(exist_ok=True)
 
     # We take DIST_DIR through an environment variable rather than an
     # argument to match the interface for traditional Android builds.
@@ -117,7 +118,7 @@ def main():
     #
 
     source_manager.setup_files(
-      RUSTC_PATH, OUT_PATH_RUSTC, PATCHES_PATH,
+      RUST_SOURCE_PATH, OUT_PATH_RUST_SOURCE, PATCHES_PATH,
       no_patch_abort=args.no_patch_abort)
 
     #
@@ -127,27 +128,26 @@ def main():
     # Cargo.lock
     #
 
-    # TODO: Remove this argument when paths.py gets updated
-    config_toml.configure(OUT_PATH_RUSTC)
+    config_toml.configure()
 
     # Trigger bootstrap to trigger vendoring
     #
     # Call is not checked because this is *expected* to fail - there isn't a
     # user facing way to directly trigger the bootstrap, so we give it a
     # no-op to perform that will require it to write out the cargo config.
-    subprocess.call([OUT_PATH_RUSTC / 'x.py', '--help'],
-                    cwd=OUT_PATH_RUSTC, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.call([OUT_PATH_RUST_SOURCE / 'x.py', '--help'],
+                    cwd=OUT_PATH_RUST_SOURCE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # Offline fetch to regenerate lockfile
     res = subprocess.check_output(
         [RUST_PREBUILT_PATH / 'bin' / 'cargo', 'fetch', '--offline'],
-        cwd=OUT_PATH_RUSTC, env=env)
+        cwd=OUT_PATH_RUST_SOURCE, env=env)
 
     #
     # Build
     #
-    ec = subprocess.Popen([OUT_PATH_RUSTC / 'x.py', '--stage', '3', 'install'],
-                          cwd=OUT_PATH_RUSTC, env=env).wait()
+    ec = subprocess.Popen([OUT_PATH_RUST_SOURCE / 'x.py', '--stage', '3', 'install'],
+                          cwd=OUT_PATH_RUST_SOURCE, env=env).wait()
     if ec != 0:
         print("Build stage failed with error {}".format(ec))
         sys.exit(ec)
@@ -156,7 +156,7 @@ def main():
     if build_platform.system() == 'linux':
         shutil.rmtree(OUT_PATH_STDLIB_SRCS, ignore_errors=True)
         for stdlib in STDLIB_SOURCES:
-            shutil.copytree(OUT_PATH_RUSTC / stdlib, OUT_PATH_STDLIB_SRCS / stdlib)
+            shutil.copytree(OUT_PATH_RUST_SOURCE / stdlib, OUT_PATH_STDLIB_SRCS / stdlib)
 
     # Fixup
     # The Rust build doesn't have an option to auto-strip binaries, so we do
