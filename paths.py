@@ -53,51 +53,6 @@ CURL_PREBUILT_PATH:        Path = PREBUILT_PATH / 'android-emulator-build' / 'cu
 
 # Use of the NDK should eventually be removed so as to make this a Platform
 # target, but is used for now as a transition stage.
-NDK_PATH:         Path = WORKSPACE_PATH / 'toolchain' / 'prebuilts' / 'ndk' / 'r20'
-NDK_SYSROOT_PATH: Path = NDK_PATH / 'sysroot'
-NDK_INCLUDE_PATH: Path = NDK_SYSROOT_PATH / 'usr' / 'include'
-NDK_LLVM_PATH:    Path = NDK_PATH / 'toolchains' / 'llvm' / 'prebuilts' / 'linux-x86_64'
-
-def target_includes_path(target) -> Path:
-    """Generates a path relative to the target-specific NDK include dir."""
-    return NDK_INCLUDE_PATH / normalize_target(target)
-
-
-def plat_ndk_llvm_libs_path(target) -> Path:
-    """Generates a path relative to the target's LLVM NDK sysroot libs"""
-    return NDK_LLVM_PATH / 'sysroot' / 'usr' / 'lib' / normalize_target(target)
-
-
-def plat_ndk_sysroot_path(target) -> Path:
-    """Generates a path relative to the NDK platform-specific sysroot.
-
-    This sysroot is incomplete, and contains only the object files, not the
-    headers. However, the primary sysroot has the object files behind an
-    additional level of indirection for the API level which platform clang
-    does not look through.
-    """
-    return NDK_PATH / 'platforms' / 'android-29' / ('arch-' + extract_arch(target))
-
-
-def gcc_libdir_path(target) -> Path:
-    """Locates the directory with the gcc library target prebuilts."""
-    return NDK_LLVM_PATH / 'lib' / 'gcc' / normalize_target(target) / '4.9.x'
-
-
-def extract_arch(target):
-    """Extracts from a target the android-style arch"""
-    canon_arch = target.split('-')[0]
-    if canon_arch == 'aarch64':
-        return 'arm64'
-    if canon_arch == 'armv7':
-        return 'arm'
-    if canon_arch == 'i686':
-        return 'x86'
-    return canon_arch
-
-
-def normalize_target(target):
-    """Translates triples into their general form."""
-    if target == 'armv7-linux-androideabi':
-        return 'arm-linux-androideabi'
-    return target
+NDK_PATH:         Path = WORKSPACE_PATH / 'toolchain' / 'prebuilts' / 'ndk' / 'r23'
+NDK_LLVM_PATH:    Path = NDK_PATH / 'toolchains' / 'llvm' / 'prebuilt' / 'linux-x86_64'
+NDK_SYSROOT_PATH: Path = NDK_LLVM_PATH / 'sysroot'

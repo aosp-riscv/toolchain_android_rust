@@ -24,14 +24,22 @@ from paths import *
 HOST_TARGETS: list[str] = [build_platform.triple()] + build_platform.alt_triples()
 DEVICE_TARGETS: list[str] = ['aarch64-linux-android', 'armv7-linux-androideabi',
                   'x86_64-linux-android', 'i686-linux-android']
+
+# HOST_TARGETS: list[str] = [build_platform.triple()]
+# DEVICE_TARGETS: list[str] = ['i686-linux-android']
+
 ALL_TARGETS: list[str] = HOST_TARGETS + DEVICE_TARGETS
 
-CONFIG_TOML_TEMPLATE:       Path = TEMPLATES_PATH / 'config.toml.template'
-DEVICE_CC_WRAPPER_TEMPLATE: Path = TEMPLATES_PATH / 'device_cc_wrapper.template'
-DEVICE_TARGET_TEMPLATE:     Path = TEMPLATES_PATH / 'device_target.template'
-HOST_CC_WRAPPER_TEMPLATE:   Path = TEMPLATES_PATH / 'host_cc_wrapper.template'
-HOST_CXX_WRAPPER_TEMPLATE:  Path = TEMPLATES_PATH / 'host_cxx_wrapper.template'
-HOST_TARGET_TEMPLATE:       Path = TEMPLATES_PATH / 'host_target.template'
+ANDROID_TARGET_VERSION: str = '31'
+
+CONFIG_TOML_TEMPLATE:           Path = TEMPLATES_PATH / 'config.toml.template'
+DEVICE_CC_WRAPPER_TEMPLATE:     Path = TEMPLATES_PATH / 'device_cc_wrapper.template'
+DEVICE_LINKER_WRAPPER_TEMPLATE: Path = TEMPLATES_PATH / 'device_linker_wrapper.template'
+DEVICE_TARGET_TEMPLATE:         Path = TEMPLATES_PATH / 'device_target.template'
+HOST_CC_WRAPPER_TEMPLATE:       Path = TEMPLATES_PATH / 'host_cc_wrapper.template'
+HOST_CXX_WRAPPER_TEMPLATE:      Path = TEMPLATES_PATH / 'host_cxx_wrapper.template'
+HOST_LINKER_WRAPPER_TEMPLATE:   Path = TEMPLATES_PATH / 'host_linker_wrapper.template'
+HOST_TARGET_TEMPLATE:           Path = TEMPLATES_PATH / 'host_target.template'
 
 CARGO_PATH:  Path = RUST_PREBUILT_PATH   / 'bin' / 'cargo'
 RUSTC_PATH:  Path = RUST_PREBUILT_PATH   / 'bin' / 'rustc'
@@ -42,20 +50,17 @@ AR_PATH:     Path = LLVM_PREBUILT_PATH   / 'bin' / 'llvm-ar'
 RANLIB_PATH: Path = LLVM_PREBUILT_PATH   / 'bin' / 'llvm-ranlib'
 CXXSTD_PATH: Path = LLVM_PREBUILT_PATH   / 'include' / 'c++' / 'v1'
 
-# Add the path at which libc++ can be found in Android checkouts
-CXX_LINKER_FLAGS: str = ' -Wl,-rpath,'
-if build_platform.system() == 'darwin':
-    CXX_LINKER_FLAGS += '@loader_path/../lib64'
-else:
-    CXX_LINKER_FLAGS += '\\$ORIGIN/../lib64'
-# Add the path at which libc++ can be found during the build
-CXX_LINKER_FLAGS += ' -Wl,-rpath,' + LLVM_CXX_RUNTIME_PATH.as_posix()
+LD_SELECTOR: str = '-fuse-ld=lld' if build_platform.system() == 'linux' else ''
 
-LD_OPTIONS: str = None
-if build_platform.system() == 'linux':
-    LD_OPTIONS = '-fuse-ld=lld -Wno-unused-command-line-argument'
-else:
-    LD_OPTIONS = ''
+LD_RPATH_BUILDTIME: str = '-rpath ' + LLVM_CXX_RUNTIME_PATH.as_posix()
+
+CXX_RPATH_BUILDTIME: str = '-Wl,-rpath,' + LLVM_CXX_RUNTIME_PATH.as_posix()
+CXX_RPATH_RUNTIME: str   = '-Wl,-rpath,' + (
+    '@loader_path/../lib64' if build_platform.system() == 'darwin' else '\\$ORIGIN/../lib64')
+
+CXX_MACOSX_FLAGS: str = '-mmacosx-version-min=10.14' if build_platform.system() == 'darwin' else ''
+
+CXX_LINKER_FLAGS = CXX_RPATH_BUILDTIME + ' ' + CXX_RPATH_RUNTIME + ' ' + CXX_MACOSX_FLAGS
 
 
 def instantiate_template_exec(template_path: Path, output_path: Path, **kwargs):
@@ -71,14 +76,14 @@ def instantiate_template_file(template_path: Path, output_path: Path, make_exec:
 
 
 def host_config(target: str, sysroot_flags: str) -> str:
-    cc_wrapper_name  = OUT_PATH_WRAPPERS / ('clang-%s' % target)
-    cxx_wrapper_name = OUT_PATH_WRAPPERS / ('clang++-%s' % target)
+    cc_wrapper_name     = OUT_PATH_WRAPPERS / ('clang-%s' % target)
+    cxx_wrapper_name    = OUT_PATH_WRAPPERS / ('clang++-%s' % target)
+    linker_wrapper_name = OUT_PATH_WRAPPERS / ('linker-%s' % target)
 
     instantiate_template_exec(
         HOST_CC_WRAPPER_TEMPLATE,
         cc_wrapper_name,
         real_cc=CC_PATH,
-        ld_option=LD_OPTIONS,
         target=target,
         sysroot_flags=sysroot_flags)
 
@@ -86,10 +91,17 @@ def host_config(target: str, sysroot_flags: str) -> str:
         HOST_CXX_WRAPPER_TEMPLATE,
         cxx_wrapper_name,
         real_cxx=CXX_PATH,
-        ld_option=LD_OPTIONS,
         target=target,
-        sysroot_flags=sysroot_flags,
         cxxstd=CXXSTD_PATH,
+        sysroot_flags=sysroot_flags)
+
+    instantiate_template_exec(
+        HOST_LINKER_WRAPPER_TEMPLATE,
+        linker_wrapper_name,
+        real_cxx=CXX_PATH,
+        target=target,
+        ld_selector=LD_SELECTOR,
+        sysroot_flags=sysroot_flags,
         cxx_linker_flags=CXX_LINKER_FLAGS)
 
     with open(HOST_TARGET_TEMPLATE, 'r') as template_file:
@@ -97,27 +109,34 @@ def host_config(target: str, sysroot_flags: str) -> str:
             target=target,
             cc=cc_wrapper_name,
             cxx=cxx_wrapper_name,
+            linker=linker_wrapper_name,
             ar=AR_PATH,
             ranlib=RANLIB_PATH)
 
 
 def device_config(target: str) -> str:
     cc_wrapper_name = OUT_PATH_WRAPPERS / ('clang-%s' % target)
+    linker_wrapper_name = OUT_PATH_WRAPPERS / ('linker-%s' % target)
+
+    clang_target = target + ANDROID_TARGET_VERSION
 
     instantiate_template_exec(
         DEVICE_CC_WRAPPER_TEMPLATE,
         cc_wrapper_name,
         real_cc=CC_PATH,
-        sysroot=plat_ndk_sysroot_path(target),
-        ndk_includes=NDK_INCLUDE_PATH,
-        target_includes=target_includes_path(target),
-        target=target,
-        gcc_libdir=gcc_libdir_path(target),
-        sys_dir=plat_ndk_llvm_libs_path(target))
+        target=clang_target,
+        sysroot=NDK_SYSROOT_PATH)
+
+    instantiate_template_exec(
+        DEVICE_LINKER_WRAPPER_TEMPLATE,
+        linker_wrapper_name,
+        real_cc=CC_PATH,
+        target=clang_target,
+        sysroot=NDK_SYSROOT_PATH)
 
     with open(DEVICE_TARGET_TEMPLATE, 'r') as template_file:
         return Template(template_file.read()).substitute(
-            target=target, cc=cc_wrapper_name, ar=AR_PATH)
+            target=target, cc=cc_wrapper_name, linker=linker_wrapper_name, ar=AR_PATH)
 
 
 def configure():
@@ -130,10 +149,10 @@ def configure():
         output = subprocess.check_output(
             ['xcrun', '--sdk', 'macosx', '--show-sdk-path'])
         sysroot = output.rstrip().decode('utf-8')
-    sysroot_flags = ("--sysroot " + sysroot) if sysroot else ""
+    host_sysroot_flags = ("--sysroot " + sysroot) if sysroot else ""
 
     host_configs = '\n'.join(
-        [host_config(target, sysroot_flags) for target in HOST_TARGETS])
+        [host_config(target, host_sysroot_flags) for target in HOST_TARGETS])
     device_configs = '\n'.join(
         [device_config(target) for target in DEVICE_TARGETS])
 
@@ -143,6 +162,7 @@ def configure():
     instantiate_template_file(
         CONFIG_TOML_TEMPLATE,
         OUT_PATH_RUST_SOURCE / 'config.toml',
+        llvm_ldflags=LD_RPATH_BUILDTIME,
         all_targets=all_targets,
         cargo=CARGO_PATH,
         rustc=RUSTC_PATH,
