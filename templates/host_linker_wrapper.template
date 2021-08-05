@@ -1,0 +1,2 @@
+#!/bin/sh
+$real_cxx -stdlib=libc++ --target=$target $sysroot_flags $ld_options $cxx_linker_flags $$*
