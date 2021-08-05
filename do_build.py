@@ -171,16 +171,16 @@ def main():
         OUT_PATH_PACKAGE / 'bin' / 'cargo',
         OUT_PATH_PACKAGE / 'bin' / 'rustdoc'])
 
-    # Install the libc++ library to lib64/
+    # Install the libc++ library to out/package/lib64/
     if build_platform.system() == 'darwin':
         libcxx_name = 'libc++.dylib'
     else:
         libcxx_name = 'libc++.so.1'
+
     lib64_path = OUT_PATH_PACKAGE / 'lib64'
-    if not lib64_path.exists():
-        lib64_path.mkdir()
+    lib64_path.mkdir(exist_ok=True)
     shutil.copy2(LLVM_CXX_RUNTIME_PATH / libcxx_name,
-                 OUT_PATH_PACKAGE / 'lib64' / libcxx_name)
+                 lib64_path / libcxx_name)
 
     # Some stdlib crates might include Android.mk or Android.bp files.
     # If they do, filter them out.
@@ -189,6 +189,7 @@ def main():
             f.unlink()
 
     # Dist
+    print("Creating distribution archive")
     tarball_path = dist_dir / 'rust-{0}.tar.gz'.format(build_name)
     subprocess.check_call(['tar', 'czf', tarball_path, '.'],
         cwd=OUT_PATH_PACKAGE)

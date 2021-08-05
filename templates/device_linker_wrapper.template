@@ -1,0 +1,2 @@
+#!/bin/sh
+$real_cc $${*/"-lgcc"} -fuse-ld=lld --target=$target --sysroot=$sysroot
