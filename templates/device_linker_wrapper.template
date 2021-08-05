@@ -1,0 +1,2 @@
+#!/bin/sh
+$real_cc $$* -fuse-ld=lld --target=$target --sysroot=$sysroot -L$gcc_libdir -L$sys_dir
