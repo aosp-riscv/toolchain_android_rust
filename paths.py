@@ -34,8 +34,8 @@ OUT_PATH_STDLIB_SRCS: Path = OUT_PATH_PACKAGE / 'src' / 'stdlibs'
 OUT_PATH_WRAPPERS:    Path = OUT_PATH / 'wrappers'
 
 PREBUILT_PATH:         Path = WORKSPACE_PATH / 'prebuilts'
-RUST_PREBUILT_PATH:    Path = (PREBUILT_PATH / 'rust' / build_platform.prebuilt() / STAGE0_RUST_VERSION)
-LLVM_PREBUILT_PATH:    Path = (PREBUILT_PATH / 'clang' / 'host' / build_platform.prebuilt() / CLANG_NAME)
+RUST_PREBUILT_PATH:    Path = PREBUILT_PATH / 'rust' / build_platform.prebuilt() / STAGE0_RUST_VERSION
+LLVM_PREBUILT_PATH:    Path = PREBUILT_PATH / 'clang' / 'host' / build_platform.prebuilt() / CLANG_NAME
 LLVM_CXX_RUNTIME_PATH: Path = LLVM_PREBUILT_PATH / 'lib64'
 
 # We live at      prebuilts/rust/${BUILD_PLATFORM}/${VERSION}/bin
@@ -45,6 +45,7 @@ ANDROID_CXX_RUNTIME_PATH: Path = (
     WORKSPACE_PATH / '..' / '..' / 'clang' / 'host' /
         build_platform.prebuilt() / CLANG_NAME / 'lib64').resolve()
 
+PYTHON_PREBUILT_PATH:      Path = PREBUILT_PATH / 'python' / build_platform.prebuilt()
 CMAKE_PREBUILT_PATH:       Path = PREBUILT_PATH / 'cmake' / build_platform.prebuilt()
 NINJA_PREBUILT_PATH:       Path = PREBUILT_PATH / 'ninja' / build_platform.prebuilt()
 BUILD_TOOLS_PREBUILT_PATH: Path = PREBUILT_PATH / 'build-tools' / 'path' / build_platform.prebuilt()

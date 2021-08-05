@@ -34,13 +34,14 @@ HOST_CC_WRAPPER_TEMPLATE:   Path = TEMPLATES_PATH / 'host_cc_wrapper.template'
 HOST_CXX_WRAPPER_TEMPLATE:  Path = TEMPLATES_PATH / 'host_cxx_wrapper.template'
 HOST_TARGET_TEMPLATE:       Path = TEMPLATES_PATH / 'host_target.template'
 
-CARGO_PATH:  Path = RUST_PREBUILT_PATH / 'bin' / 'cargo'
-RUSTC_PATH:  Path = RUST_PREBUILT_PATH / 'bin' / 'rustc'
-CC_PATH:     Path = LLVM_PREBUILT_PATH / 'bin' / 'clang'
-CXX_PATH:    Path = LLVM_PREBUILT_PATH / 'bin' / 'clang++'
-AR_PATH:     Path = LLVM_PREBUILT_PATH / 'bin' / 'llvm-ar'
-RANLIB_PATH: Path = LLVM_PREBUILT_PATH / 'bin' / 'llvm-ranlib'
-CXXSTD_PATH: Path = LLVM_PREBUILT_PATH / 'include' / 'c++' / 'v1'
+CARGO_PATH:  Path = RUST_PREBUILT_PATH   / 'bin' / 'cargo'
+RUSTC_PATH:  Path = RUST_PREBUILT_PATH   / 'bin' / 'rustc'
+PYTHON_PATH: Path = PYTHON_PREBUILT_PATH / 'bin' / 'python3'
+CC_PATH:     Path = LLVM_PREBUILT_PATH   / 'bin' / 'clang'
+CXX_PATH:    Path = LLVM_PREBUILT_PATH   / 'bin' / 'clang++'
+AR_PATH:     Path = LLVM_PREBUILT_PATH   / 'bin' / 'llvm-ar'
+RANLIB_PATH: Path = LLVM_PREBUILT_PATH   / 'bin' / 'llvm-ranlib'
+CXXSTD_PATH: Path = LLVM_PREBUILT_PATH   / 'include' / 'c++' / 'v1'
 
 # Add the path at which libc++ can be found in Android checkouts
 CXX_LINKER_FLAGS: str = ' -Wl,-rpath,'
@@ -148,5 +149,6 @@ def configure():
                     all_targets=all_targets,
                     cargo=CARGO_PATH,
                     rustc=RUSTC_PATH,
+                    python=PYTHON_PATH,
                     host_configs=host_configs,
                     device_configs=device_configs))

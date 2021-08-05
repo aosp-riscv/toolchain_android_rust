@@ -8,6 +8,7 @@ use-libcxx = true
 target = $all_targets
 cargo = "$cargo"
 rustc = "$rustc"
+python = "$python"
 verbose = 1
 profiler = true
 docs = false
