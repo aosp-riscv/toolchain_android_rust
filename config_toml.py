@@ -125,7 +125,6 @@ def device_config(target: str) -> str:
         real_cc=CC_PATH,
         target=target,
         sysroot=plat_ndk_sysroot_path(target),
-        gcc_libdir=gcc_libdir_path(target),
         sys_dir=plat_ndk_llvm_libs_path(target))
 
     with open(DEVICE_TARGET_TEMPLATE, 'r') as template_file:
