@@ -79,11 +79,6 @@ def plat_ndk_sysroot_path(target) -> Path:
     return NDK_PATH / 'platforms' / 'android-29' / ('arch-' + extract_arch(target))
 
 
-def gcc_libdir_path(target) -> Path:
-    """Locates the directory with the gcc library target prebuilts."""
-    return NDK_LLVM_PATH / 'lib' / 'gcc' / normalize_target(target) / '4.9.x'
-
-
 def extract_arch(target):
     """Extracts from a target the android-style arch"""
     canon_arch = target.split('-')[0]
