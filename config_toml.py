@@ -49,7 +49,8 @@ if build_platform.system() == 'darwin':
 else:
     CXX_LINKER_FLAGS += '\\$ORIGIN/../lib64'
 # Add the path at which libc++ can be found during the build
-CXX_LINKER_FLAGS += ' -Wl,-rpath,' + LLVM_CXX_RUNTIME_PATH.as_posix()
+CXX_LINKER_FLAGS += (' -L' + LLVM_CXX_RUNTIME_PATH.as_posix() +
+                     ' -Wl,-rpath,' + LLVM_CXX_RUNTIME_PATH.as_posix())
 
 LD_OPTIONS: str = None
 if build_platform.system() == 'linux':
