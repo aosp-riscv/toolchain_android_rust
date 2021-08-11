@@ -46,6 +46,7 @@ CXXSTD_PATH: Path = LLVM_PREBUILT_PATH   / 'include' / 'c++' / 'v1'
 CXX_LINKER_FLAGS: str = ' -Wl,-rpath,'
 if build_platform.system() == 'darwin':
     CXX_LINKER_FLAGS += '@loader_path/../lib64'
+    CXX_LINKER_FLAGS += '-mmacosx-version-min=10.14'
 else:
     CXX_LINKER_FLAGS += '\\$ORIGIN/../lib64'
 # Add the path at which libc++ can be found during the build
