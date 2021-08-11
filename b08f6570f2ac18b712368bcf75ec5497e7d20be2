@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "449e1481_4ee4cbde",
+        "filename": "config_toml.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-08-11T23:48:25Z",
+      "side": 1,
+      "message": "I think you need a space here.",
+      "range": {
+        "startLine": 49,
+        "startChar": 25,
+        "endLine": 49,
+        "endChar": 26
+      },
+      "revId": "b08f6570f2ac18b712368bcf75ec5497e7d20be2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
