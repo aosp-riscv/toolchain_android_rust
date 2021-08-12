@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9fa2db5f_1ca24e3c",
+        "filename": "config_toml.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-08-12T00:25:40Z",
+      "side": 1,
+      "message": "Thank you. I was about to say that this CL is going to undo my mac fix, but maybe not. ;)",
+      "revId": "c1471cc804ecccde752c54ee2e1cccacf1098c28",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
