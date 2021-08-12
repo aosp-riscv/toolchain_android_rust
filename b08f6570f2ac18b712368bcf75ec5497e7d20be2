@@ -22,6 +22,30 @@
       },
       "revId": "b08f6570f2ac18b712368bcf75ec5497e7d20be2",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "45af368f_f07e6c9a",
+        "filename": "config_toml.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-08-12T00:02:31Z",
+      "side": 1,
+      "message": "Good catch. Ugh I really dislike how hard it is to tell that things are working with these mac builds.",
+      "parentUuid": "449e1481_4ee4cbde",
+      "range": {
+        "startLine": 49,
+        "startChar": 25,
+        "endLine": 49,
+        "endChar": 26
+      },
+      "revId": "b08f6570f2ac18b712368bcf75ec5497e7d20be2",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
