@@ -1,0 +1,30 @@
+{
+  "comments": [
+    {
+      "robotId": "ayeaye",
+      "robotRunId": "AR00000000000015005908",
+      "url": "https://android-build.googleplex.com/builds/treetop/android-review/1788527?revision\u003d7",
+      "fixSuggestions": [],
+      "key": {
+        "uuid": "0dbeecd2_bf7ff0a1",
+        "filename": "config_toml.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1757831
+      },
+      "writtenOn": "2021-09-01T18:00:18Z",
+      "side": 1,
+      "message": "This file contains a set of conflict markers.If this is a false alarm, add IGNORE_MERGE_CONFLICT_CHECK\u003d\u003d\u003creason\u003e to your commit message.",
+      "range": {
+        "startLine": 50,
+        "startChar": 1,
+        "endLine": 50,
+        "endChar": 7
+      },
+      "revId": "e263f8495b0a1b74f3ac94a1601f336b7d32099d",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
