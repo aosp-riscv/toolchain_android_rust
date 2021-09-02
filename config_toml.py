@@ -24,7 +24,10 @@ from paths import *
 HOST_TARGETS: list[str] = [build_platform.triple()] + build_platform.alt_triples()
 DEVICE_TARGETS: list[str] = ['aarch64-linux-android', 'armv7-linux-androideabi',
                   'x86_64-linux-android', 'i686-linux-android']
+
 ALL_TARGETS: list[str] = HOST_TARGETS + DEVICE_TARGETS
+
+ANDROID_TARGET_VERSION: str = '31'
 
 CONFIG_TOML_TEMPLATE:       Path = TEMPLATES_PATH / 'config.toml.template'
 DEVICE_CC_WRAPPER_TEMPLATE: Path = TEMPLATES_PATH / 'device_cc_wrapper.template'
@@ -106,16 +109,14 @@ def host_config(target: str, sysroot_flags: str) -> str:
 def device_config(target: str) -> str:
     cc_wrapper_name = OUT_PATH_WRAPPERS / ('clang-%s' % target)
 
+    clang_target = target + ANDROID_TARGET_VERSION
+
     instantiate_template_exec(
         DEVICE_CC_WRAPPER_TEMPLATE,
         cc_wrapper_name,
         real_cc=CC_PATH,
-        sysroot=plat_ndk_sysroot_path(target),
-        ndk_includes=NDK_INCLUDE_PATH,
-        target_includes=target_includes_path(target),
-        target=target,
-        gcc_libdir=gcc_libdir_path(target),
-        sys_dir=plat_ndk_llvm_libs_path(target))
+        target=clang_target,
+        sysroot=NDK_SYSROOT_PATH)
 
     with open(DEVICE_TARGET_TEMPLATE, 'r') as template_file:
         return Template(template_file.read()).substitute(
@@ -132,10 +133,10 @@ def configure():
         output = subprocess.check_output(
             ['xcrun', '--sdk', 'macosx', '--show-sdk-path'])
         sysroot = output.rstrip().decode('utf-8')
-    sysroot_flags = ("--sysroot " + sysroot) if sysroot else ""
+    host_sysroot_flags = ("--sysroot " + sysroot) if sysroot else ""
 
     host_configs = '\n'.join(
-        [host_config(target, sysroot_flags) for target in HOST_TARGETS])
+        [host_config(target, host_sysroot_flags) for target in HOST_TARGETS])
     device_configs = '\n'.join(
         [device_config(target) for target in DEVICE_TARGETS])
 
