@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ace4523f_163fa4b6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-09-03T04:10:33Z",
+      "side": 1,
+      "message": "Julie, can I ask why you uploaded reverts for these patches?",
+      "revId": "fe402bb1cb4f2af23eef3d809057399b88939134",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
