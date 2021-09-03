@@ -171,7 +171,7 @@ def main():
     if build_platform.system() == 'darwin':
         libcxx_name = 'libc++.dylib'
     else:
-        libcxx_name = 'libc++.so.1'
+        libcxx_name = 'libc++.so'
     lib64_path = paths.out_path('lib64')
     if not os.path.exists(lib64_path):
         os.makedirs(lib64_path)
