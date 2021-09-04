@@ -1,2 +1,2 @@
 #!/bin/bash
-$real_cc $$* $ld_option --target=$target $sysroot_flags
+$real_cc $$* $ld_selector --target=$target $macosx_flags
