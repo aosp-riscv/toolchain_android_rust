@@ -1,2 +1,2 @@
 #!/bin/bash
-$real_cc $$* $ld_option --target=$target $toolchain_flags
+$real_cc $$* --target=$target $macosx_flags

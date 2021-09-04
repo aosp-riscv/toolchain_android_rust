@@ -1,6 +1,6 @@
 [target.$target]
 cc = "$cc"
 cxx = "$cxx"
+linker = "$linker"
 ar = "$ar"
 ranlib = "$ranlib"
-linker = "$cxx"
