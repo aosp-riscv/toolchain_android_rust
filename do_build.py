@@ -95,6 +95,8 @@ def main():
 
     env['DESTDIR'] = OUT_PATH_PACKAGE
 
+    env['LDFLAGS'] = config_toml.CXX_RPATH_BUILDTIME
+
     #
     # Initialize directories
     #
