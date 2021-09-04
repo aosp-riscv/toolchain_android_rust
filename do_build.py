@@ -94,6 +94,10 @@ def main():
 
     env['DESTDIR'] = OUT_PATH_PACKAGE
 
+    # Add the buildtime linker flags to the LDFLAGS variable so that the
+    # initial CMake compiler test scripts will succeed.
+    env['LDFLAGS'] = config_toml.CXX_LINKER_FLAGS_BUILDTIME
+
     #
     # Initialize directories
     #
