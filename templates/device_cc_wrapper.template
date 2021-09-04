@@ -1,2 +1,2 @@
 #!/bin/bash
-$real_cc $${*/"-lgcc"} -fuse-ld=lld -Wno-unused-command-line-argument --target=$target --sysroot=$sysroot
+$real_cc $$* --target=$target --sysroot=$sysroot
