@@ -1,0 +1,31 @@
+From 7c73299dbc68fb7a59637d98fc56fdbcaf7ab67d Mon Sep 17 00:00:00 2001
+From: Chris Wailes <chriswailes@google.com>
+Date: Mon, 13 Sep 2021 23:58:25 -0700
+Subject: [PATCH] Modify Rust build system to correctly handle use-libcxx
+
+This CL modifies the Rust build system so that it will pass
+LLVM_ENABLE_LIBCXX when the use-libcxx option is enabled in config.toml.
+
+Change-Id: Ibc1285f49843238aa912606d87295dd19f24ae6e
+---
+ src/bootstrap/native.rs | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/bootstrap/native.rs b/src/bootstrap/native.rs
+index 1be414b29a..849c0f0cc1 100644
+--- a/src/bootstrap/native.rs
++++ b/src/bootstrap/native.rs
+@@ -182,6 +182,10 @@ impl Step for Llvm {
+             .define("LLVM_TARGET_ARCH", target_native.split('-').next().unwrap())
+             .define("LLVM_DEFAULT_TARGET_TRIPLE", target_native);
+ 
++        if builder.config.llvm_use_libcxx {
++            cfg.define("LLVM_ENABLE_LIBCXX", "ON");
++        }
++
+         if target != "aarch64-apple-darwin" && !target.contains("windows") {
+             cfg.define("LLVM_ENABLE_ZLIB", "ON");
+         } else {
+-- 
+2.33.0.309.g3052b89438-goog
+
