@@ -1,0 +1,46 @@
+From 336f0e01d157dae448ae4025bc46939439f05b0b Mon Sep 17 00:00:00 2001
+From: Chris Wailes <chriswailes@google.com>
+Date: Wed, 15 Sep 2021 17:18:15 -0700
+Subject: [PATCH] Pass CMAKE_LINKER to LLVM's build system
+
+Previously the Rust bootstrap system would pass CMAKE_CC_COMPILER and
+CMAKE_CXX_COMPILER to LLVM's build system but didn't pass CMAKE_LINKER,
+even if a linker was provided for the host target.  This CL modifies the
+bootstrap process to pass CMAKE_LINKER.
+
+Test: ./build.py
+Change-Id: Ic8957b9c650d6f7ad547f1fb0882c3046f88fad7
+---
+ src/bootstrap/native.rs | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/src/bootstrap/native.rs b/src/bootstrap/native.rs
+index 849c0f0cc1..c8308111d7 100644
+--- a/src/bootstrap/native.rs
++++ b/src/bootstrap/native.rs
+@@ -414,9 +414,9 @@ fn configure_cmake(
+         return;
+     }
+ 
+-    let (cc, cxx) = match builder.config.llvm_clang_cl {
+-        Some(ref cl) => (cl.as_ref(), cl.as_ref()),
+-        None => (builder.cc(target), builder.cxx(target).unwrap()),
++    let (cc, cxx, linker) = match builder.config.llvm_clang_cl {
++        Some(ref cl) => (cl.as_ref(), cl.as_ref(), cl.as_ref()),
++        None => (builder.cc(target), builder.cxx(target).unwrap(), builder.linker(target).unwrap()),
+     };
+ 
+     // Handle msvc + ninja + ccache specially (this is what the bots use)
+@@ -468,7 +468,8 @@ fn configure_cmake(
+         }
+         cfg.define("CMAKE_C_COMPILER", sanitize_cc(cc))
+             .define("CMAKE_CXX_COMPILER", sanitize_cc(cxx))
+-            .define("CMAKE_ASM_COMPILER", sanitize_cc(cc));
++            .define("CMAKE_ASM_COMPILER", sanitize_cc(cc))
++            .define("CMAKE_LINKER", sanitize_cc(linker));
+     }
+ 
+     cfg.build_arg("-j").build_arg(builder.jobs().to_string());
+-- 
+2.33.0.464.g1972c5931b-goog
+
