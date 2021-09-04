@@ -1,0 +1,75 @@
+From d10f0b6c2e9571d1b5a686fe67b157e8acc423e9 Mon Sep 17 00:00:00 2001
+From: Chris Wailes <chriswailes@google.com>
+Date: Thu, 16 Sep 2021 14:59:38 -0700
+Subject: [PATCH] Add a use-lld option to rust's bootstrap process
+
+This CL adds a specific `use-lld` option that will set the
+`LLVM_ENABLE_LLD` flag.  This is to supplement the existing `use-linker`
+option, as the LLVM flag causes additional behavior changes in the LLVM
+build system.
+
+Change-Id: I0e851058ab3152511f9796f8b44b3f81f8411d49
+---
+ src/bootstrap/config.rs    | 3 +++
+ src/bootstrap/configure.py | 1 +
+ src/bootstrap/native.rs    | 4 ++++
+ 3 files changed, 8 insertions(+)
+
+diff --git a/src/bootstrap/config.rs b/src/bootstrap/config.rs
+index 4b3c25b02c..311394c898 100644
+--- a/src/bootstrap/config.rs
++++ b/src/bootstrap/config.rs
+@@ -102,6 +102,7 @@ pub struct Config {
+     pub llvm_link_jobs: Option<u32>,
+     pub llvm_version_suffix: Option<String>,
+     pub llvm_use_linker: Option<String>,
++    pub llvm_use_lld: bool,
+     pub llvm_allow_old_toolchain: bool,
+     pub llvm_polly: bool,
+     pub llvm_from_ci: bool,
+@@ -429,6 +430,7 @@ struct Llvm {
+     cxxflags: Option<String>,
+     ldflags: Option<String>,
+     use_libcxx: Option<bool>,
++    use_lld: Option<bool>,
+     use_linker: Option<String>,
+     allow_old_toolchain: Option<bool>,
+     polly: Option<bool>,
+@@ -741,6 +743,7 @@ impl Config {
+             config.llvm_cxxflags = llvm.cxxflags.clone();
+             config.llvm_ldflags = llvm.ldflags.clone();
+             set(&mut config.llvm_use_libcxx, llvm.use_libcxx);
++            set(&mut config.llvm_use_lld, llvm.use_lld);
+             config.llvm_use_linker = llvm.use_linker.clone();
+             config.llvm_allow_old_toolchain = llvm.allow_old_toolchain.unwrap_or(false);
+             config.llvm_polly = llvm.polly.unwrap_or(false);
+diff --git a/src/bootstrap/configure.py b/src/bootstrap/configure.py
+index 8d9f169e6c..18d2458daa 100755
+--- a/src/bootstrap/configure.py
++++ b/src/bootstrap/configure.py
+@@ -59,6 +59,7 @@ o("full-tools", None, "enable all tools")
+ o("lld", "rust.lld", "build lld")
+ o("missing-tools", "dist.missing-tools", "allow failures when building tools")
+ o("use-libcxx", "llvm.use-libcxx", "build LLVM with libc++")
++o("use-lld", "llvm.use-lld", "Use lld to build LLVM")
+ o("control-flow-guard", "rust.control-flow-guard", "Enable Control Flow Guard")
+ 
+ v("llvm-cflags", "llvm.cflags", "build LLVM with these extra compiler flags")
+diff --git a/src/bootstrap/native.rs b/src/bootstrap/native.rs
+index c8308111d7..d5185d266f 100644
+--- a/src/bootstrap/native.rs
++++ b/src/bootstrap/native.rs
+@@ -186,6 +186,10 @@ impl Step for Llvm {
+             cfg.define("LLVM_ENABLE_LIBCXX", "ON");
+         }
+ 
++        if builder.config.llvm_use_lld {
++            cfg.define("LLVM_ENABLE_LLD", "ON");
++        }
++
+         if target != "aarch64-apple-darwin" && !target.contains("windows") {
+             cfg.define("LLVM_ENABLE_ZLIB", "ON");
+         } else {
+-- 
+2.33.0.464.g1972c5931b-goog
+
