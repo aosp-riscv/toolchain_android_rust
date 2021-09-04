@@ -16,9 +16,10 @@
 from pathlib import Path
 import build_platform
 
-STAGE0_RUST_VERSION = '1.55.0'
-CLANG_REVISION = 'r433403'
-CLANG_NAME: str = 'clang-{0}'.format(CLANG_REVISION)
+STAGE0_RUST_VERSION: str = '1.55.0'
+CLANG_REVISION:      str = 'r433403'
+CLANG_NAME:          str = 'clang-{0}'.format(CLANG_REVISION)
+GLIBC_VERSION:       str = '2.17-4.8'
 
 TOOLCHAIN_PATH:   Path = Path(__file__).parent.resolve()
 WORKSPACE_PATH:   Path = (TOOLCHAIN_PATH / '..' / '..').resolve()
@@ -33,12 +34,13 @@ OUT_PATH_PACKAGE:     Path = OUT_PATH / 'package'
 OUT_PATH_STDLIB_SRCS: Path = OUT_PATH_PACKAGE / 'src' / 'stdlibs'
 OUT_PATH_WRAPPERS:    Path = OUT_PATH / 'wrappers'
 
-LLVM_BUILD_PATH: Path = OUT_PATH_RUST_SOURCE / 'build' / 'x86_64-unknown-linux-gnu' / 'llvm' / 'build'
+LLVM_BUILD_PATH: Path = OUT_PATH_RUST_SOURCE / 'build' / build_platform.triple() / 'llvm' / 'build'
 
 PREBUILT_PATH:         Path = WORKSPACE_PATH / 'prebuilts'
 RUST_PREBUILT_PATH:    Path = PREBUILT_PATH / 'rust' / build_platform.prebuilt() / STAGE0_RUST_VERSION
 LLVM_PREBUILT_PATH:    Path = PREBUILT_PATH / 'clang' / 'host' / build_platform.prebuilt() / CLANG_NAME
 LLVM_CXX_RUNTIME_PATH: Path = LLVM_PREBUILT_PATH / 'lib64'
+GCC_TOOLCHAIN_PATH:    Path = PREBUILT_PATH / 'gcc' / build_platform.prebuilt() / 'host' / ('x86_64-linux-glibc' + GLIBC_VERSION)
 
 # We live at      prebuilts/rust/${BUILD_PLATFORM}/${VERSION}/bin
 # libc++ lives at prebuilts/clang/host/${BUILD_PLATFORM}
