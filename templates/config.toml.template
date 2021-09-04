@@ -1,9 +1,13 @@
 changelog-seen = 2
+
 [llvm]
 ninja = true
 targets = "AArch64;ARM;X86"
 experimental-targets = ""
+cxxflags = "-stdlib=libc++"
+ldflags = "$llvm_ldflags -stdlib=libc++"
 use-libcxx = true
+
 [build]
 target = $all_targets
 cargo = "$cargo"
@@ -19,12 +23,20 @@ full-bootstrap = true
 extended = true
 tools = ["cargo", "clippy", "rustfmt", "rust-analyzer"]
 cargo-native-static = true
+
 [install]
 prefix = "/"
 sysconfdir = "etc"
+
 [rust]
 channel = "dev"
 remap-debuginfo = true
 deny-warnings = false
+
+# The presence of a linker wrapper will override this setting so we ensure
+# usage of LLD in the wrapper itself.
+#use-lld = false
+
 $host_configs
+
 $device_configs
