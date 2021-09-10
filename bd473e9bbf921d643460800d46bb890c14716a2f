@@ -20,6 +20,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "02f67648_3523f5f6",
+        "filename": "fetch_source.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-09-10T20:25:53Z",
+      "side": 1,
+      "message": "Done in followup CL.",
+      "parentUuid": "1a55c9cb_d7603925",
+      "revId": "bd473e9bbf921d643460800d46bb890c14716a2f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "02e0a3ac_fa67ae90",
         "filename": "fetch_source.py",
         "patchSetId": 2
@@ -31,6 +49,24 @@
       "writtenOn": "2021-09-10T19:22:29Z",
       "side": 1,
       "message": "Doesn\u0027t need to be this change, but we should probably also add a nightly fetcher at some point.",
+      "revId": "bd473e9bbf921d643460800d46bb890c14716a2f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "db3e5d31_f1ad0d28",
+        "filename": "fetch_source.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-09-10T20:25:53Z",
+      "side": 1,
+      "message": "I figure that could be on-demand development.",
+      "parentUuid": "02e0a3ac_fa67ae90",
       "revId": "bd473e9bbf921d643460800d46bb890c14716a2f",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
