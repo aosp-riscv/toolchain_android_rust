@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "02e0a3ac_fa67ae90",
+        "filename": "fetch_source.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-09-10T19:22:29Z",
+      "side": 1,
+      "message": "Doesn\u0027t need to be this change, but we should probably also add a nightly fetcher at some point.",
+      "revId": "bd473e9bbf921d643460800d46bb890c14716a2f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
