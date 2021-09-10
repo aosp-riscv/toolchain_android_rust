@@ -1,6 +1,23 @@
 {
   "comments": [
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "1a55c9cb_d7603925",
+        "filename": "fetch_source.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-09-10T19:24:25Z",
+      "side": 1,
+      "message": "Consider adding `--proto \u0027\u003dhttps\u0027 --tlsv1.2 -sSf` at some point in the future to prevent downgrade attacks",
+      "revId": "bd473e9bbf921d643460800d46bb890c14716a2f",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "02e0a3ac_fa67ae90",
