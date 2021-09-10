@@ -16,7 +16,7 @@
 from pathlib import Path
 import build_platform
 
-STAGE0_RUST_VERSION = '1.54.0'
+STAGE0_RUST_VERSION = '1.55.0'
 CLANG_REVISION = 'r428724'
 CLANG_NAME: str = 'clang-{0}'.format(CLANG_REVISION)
 
