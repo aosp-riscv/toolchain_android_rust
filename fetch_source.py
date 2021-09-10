@@ -25,7 +25,7 @@ from paths import RUST_SOURCE_PATH
 COMMAND_GIT_ADD    : str = "git add ."
 COMMAND_GIT_COMMIT : str = "git commit --no-verify -m 'Importing rustc-%s'"
 COMMAND_GIT_RM     : str = "git rm -fr *"
-COMMAND_FETCH      : str = "curl %s | tar xz --strip-components=1"
+COMMAND_FETCH      : str = "curl --proto '=https' --tlsv1.2 %s | tar xz --strip-components=1"
 COMMAND_REPO       : str = "repo start rust-update-source-%s"
 
 RUSTC_SOURCE_URL_VERSION_TEMPLATE : str = "https://static.rust-lang.org/dist/rustc-%s-src.tar.gz"
