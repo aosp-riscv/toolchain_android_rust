@@ -25,7 +25,7 @@ import subprocess
 import sys
 
 import build_platform
-import config_toml
+import config
 from paths import *
 
 
@@ -127,7 +127,7 @@ def main():
     # Cargo.lock
     #
 
-    config_toml.configure()
+    config.configure()
 
     # Trigger bootstrap to trigger vendoring
     #
