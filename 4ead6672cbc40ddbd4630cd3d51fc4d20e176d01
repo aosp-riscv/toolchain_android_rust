@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4819c6e4_59a330ff",
+        "filename": "templates/host_linker_wrapper.template",
+        "patchSetId": 13
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 1058860
+      },
+      "writtenOn": "2021-09-14T17:13:53Z",
+      "side": 1,
+      "message": "Do we need this?  It\u0027s not present in the old version of host_cxx_wrapper.template.",
+      "range": {
+        "startLine": 2,
+        "startChar": 59,
+        "endLine": 2,
+        "endChar": 67
+      },
+      "revId": "4ead6672cbc40ddbd4630cd3d51fc4d20e176d01",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
