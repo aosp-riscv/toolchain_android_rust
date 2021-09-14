@@ -51,6 +51,19 @@ STDLIB_SOURCES = [
         "vendor/unicode-width",
 ]
 
+LLVM_BUILD_PATHS_OF_INTERST: list[str] = [
+    'build.ninja',
+    'cmake',
+    'CMakeCache.txt',
+    'CMakeFiles',
+    'cmake_install.cmake',
+    'compile_commands.json',
+    'CPackConfig.cmake',
+    'CPackSourceConfig.cmake',
+    'install_manifest.txt',
+    'llvm.spec'
+]
+
 
 def parse_args():
     """Parses arguments and returns the parsed structure."""
@@ -149,6 +162,9 @@ def main():
                           '--stage', '3', 'install'], cwd=OUT_PATH_RUST_SOURCE, env=env).wait()
     if ec != 0:
         print("Build stage failed with error {}".format(ec))
+        tarball_path = dist_dir / 'llvm-build-config.tar.gz'
+        subprocess.check_call(['tar', 'czf', tarball_path] + LLVM_BUILD_PATHS_OF_INTERST,
+            cwd=LLVM_BUILD_PATH)
         sys.exit(ec)
 
     # Install sources

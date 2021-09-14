@@ -33,6 +33,8 @@ OUT_PATH_PACKAGE:     Path = OUT_PATH / 'package'
 OUT_PATH_STDLIB_SRCS: Path = OUT_PATH_PACKAGE / 'src' / 'stdlibs'
 OUT_PATH_WRAPPERS:    Path = OUT_PATH / 'wrappers'
 
+LLVM_BUILD_PATH: Path = OUT_PATH_RUST_SOURCE / 'build' / 'x86_64-unknown-linux-gnu' / 'llvm' / 'build'
+
 PREBUILT_PATH:         Path = WORKSPACE_PATH / 'prebuilts'
 RUST_PREBUILT_PATH:    Path = PREBUILT_PATH / 'rust' / build_platform.prebuilt() / STAGE0_RUST_VERSION
 LLVM_PREBUILT_PATH:    Path = PREBUILT_PATH / 'clang' / 'host' / build_platform.prebuilt() / CLANG_NAME
