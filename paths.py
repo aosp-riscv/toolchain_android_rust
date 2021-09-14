@@ -56,3 +56,16 @@ CURL_PREBUILT_PATH:        Path = PREBUILT_PATH / 'android-emulator-build' / 'cu
 NDK_PATH:         Path = WORKSPACE_PATH / 'toolchain' / 'prebuilts' / 'ndk' / 'r23'
 NDK_LLVM_PATH:    Path = NDK_PATH / 'toolchains' / 'llvm' / 'prebuilt' / 'linux-x86_64'
 NDK_SYSROOT_PATH: Path = NDK_LLVM_PATH / 'sysroot'
+
+#
+# Paths to executables
+#
+
+CARGO_PATH:  Path = RUST_PREBUILT_PATH   / 'bin' / 'cargo'
+RUSTC_PATH:  Path = RUST_PREBUILT_PATH   / 'bin' / 'rustc'
+PYTHON_PATH: Path = PYTHON_PREBUILT_PATH / 'bin' / 'python3'
+CC_PATH:     Path = LLVM_PREBUILT_PATH   / 'bin' / 'clang'
+CXX_PATH:    Path = LLVM_PREBUILT_PATH   / 'bin' / 'clang++'
+AR_PATH:     Path = LLVM_PREBUILT_PATH   / 'bin' / 'llvm-ar'
+RANLIB_PATH: Path = LLVM_PREBUILT_PATH   / 'bin' / 'llvm-ranlib'
+CXXSTD_PATH: Path = LLVM_PREBUILT_PATH   / 'include' / 'c++' / 'v1'
