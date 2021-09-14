@@ -134,7 +134,7 @@ def main():
     # Call is not checked because this is *expected* to fail - there isn't a
     # user facing way to directly trigger the bootstrap, so we give it a
     # no-op to perform that will require it to write out the cargo config.
-    subprocess.call([OUT_PATH_RUST_SOURCE / 'x.py', '--help'],
+    subprocess.call([PYTHON_PATH, OUT_PATH_RUST_SOURCE / 'x.py', '--help'],
                     cwd=OUT_PATH_RUST_SOURCE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # Offline fetch to regenerate lockfile
@@ -145,8 +145,8 @@ def main():
     #
     # Build
     #
-    ec = subprocess.Popen([OUT_PATH_RUST_SOURCE / 'x.py', '--stage', '3', 'install'],
-                          cwd=OUT_PATH_RUST_SOURCE, env=env).wait()
+    ec = subprocess.Popen([PYTHON_PATH, OUT_PATH_RUST_SOURCE / 'x.py',
+                          '--stage', '3', 'install'], cwd=OUT_PATH_RUST_SOURCE, env=env).wait()
     if ec != 0:
         print("Build stage failed with error {}".format(ec))
         sys.exit(ec)
