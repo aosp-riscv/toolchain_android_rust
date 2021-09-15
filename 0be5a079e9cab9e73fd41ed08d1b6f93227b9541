@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5a7736b3_06e3a6ec",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-09-15T00:56:53Z",
+      "side": 1,
+      "message": "fails",
+      "range": {
+        "startLine": 7,
+        "startChar": 57,
+        "endLine": 7,
+        "endChar": 63
+      },
+      "revId": "0be5a079e9cab9e73fd41ed08d1b6f93227b9541",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6fc5eec9_290edb2a",
+        "filename": "do_build.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-09-15T00:56:53Z",
+      "side": 1,
+      "message": "RES",
+      "range": {
+        "startLine": 54,
+        "startChar": 24,
+        "endLine": 54,
+        "endChar": 26
+      },
+      "revId": "0be5a079e9cab9e73fd41ed08d1b6f93227b9541",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
