@@ -16,6 +16,24 @@
       "message": "The shim has another benefit, and that is that it invokes the correct prebuilt hermetic python3 interpreter, and not just whatever python3 that env can find. I still think we want to retain the shim, but I do think that we can now update it to use `/usr/bin/env python3` instead, because `python` is frequently missing now on glinux machines. While it\u0027s a nop for the buildbots, most of us working on Android rustc still want to just do `./build.py` and not have to type out a giant command line for it.",
       "revId": "ade8d40a33c5350e7ceb39de2e64ac693a593803",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "51546c8d_a6e94e8e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-09-17T21:54:13Z",
+      "side": 1,
+      "message": "So this is just my opinion, but I think the benefits of removing the shim outweigh these concerns.\n\nOur own build documentation invokes the build script with the system python interpreter and it was written before we had a prebuilt python3 and shim.  If you do want to be specific about the interpreter used an alias could simplify the command.\n\nIn addition, this only impacts the execution of build.py itself, which is fairly simple.  The rustc build system will always use the prebuilt python3 as we pass in the path in the config.toml.",
+      "parentUuid": "41b6bd47_7c556ba8",
+      "revId": "ade8d40a33c5350e7ceb39de2e64ac693a593803",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
