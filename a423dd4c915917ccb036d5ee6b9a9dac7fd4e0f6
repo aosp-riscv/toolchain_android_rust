@@ -41,6 +41,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8d748c68_77866e35",
+        "filename": "config.py",
+        "patchSetId": 27
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-09-17T19:42:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f9f60bed_c2c19d21",
+      "range": {
+        "startLine": 126,
+        "startChar": 51,
+        "endLine": 126,
+        "endChar": 85
+      },
+      "revId": "a423dd4c915917ccb036d5ee6b9a9dac7fd4e0f6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "94f79a0f_351f1d2a",
@@ -64,6 +88,30 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "3ef7eb4e_24dbd1af",
+        "filename": "config.py",
+        "patchSetId": 27
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-09-17T19:42:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "94f79a0f_351f1d2a",
+      "range": {
+        "startLine": 133,
+        "startChar": 7,
+        "endLine": 133,
+        "endChar": 42
+      },
+      "revId": "a423dd4c915917ccb036d5ee6b9a9dac7fd4e0f6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "39d7f81a_8b8c2d29",
@@ -77,6 +125,24 @@
       "writtenOn": "2021-09-17T07:21:49Z",
       "side": 1,
       "message": "Do you want to mention upstreaming this fix (or have you already created an upstream CL for this that you can link in the patch file)? This way, we have some idea that we should be eventually removing this (probably once it conflicts with actual upstream). ;)",
+      "revId": "a423dd4c915917ccb036d5ee6b9a9dac7fd4e0f6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "afec670e_88172d07",
+        "filename": "patches/rustc-0017-Modify-Rust-build-system-to-correctly-handle-use-lib.patch",
+        "patchSetId": 27
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-09-17T19:42:47Z",
+      "side": 1,
+      "message": "I\u0027m planning on starting the upstreaming process on Monday.  Once I have an actual PR number from rustc I can edit it into the patch description in a follow up like you suggested.",
+      "parentUuid": "39d7f81a_8b8c2d29",
       "revId": "a423dd4c915917ccb036d5ee6b9a9dac7fd4e0f6",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
