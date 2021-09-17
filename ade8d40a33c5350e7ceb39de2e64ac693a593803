@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "41b6bd47_7c556ba8",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-09-17T21:07:52Z",
+      "side": 1,
+      "message": "The shim has another benefit, and that is that it invokes the correct prebuilt hermetic python3 interpreter, and not just whatever python3 that env can find. I still think we want to retain the shim, but I do think that we can now update it to use `/usr/bin/env python3` instead, because `python` is frequently missing now on glinux machines. While it\u0027s a nop for the buildbots, most of us working on Android rustc still want to just do `./build.py` and not have to type out a giant command line for it.",
+      "revId": "ade8d40a33c5350e7ceb39de2e64ac693a593803",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
