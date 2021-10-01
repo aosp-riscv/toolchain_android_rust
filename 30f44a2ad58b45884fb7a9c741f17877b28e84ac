@@ -1,6 +1,24 @@
 {
   "comments": [
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "4cfd1b77_77b761ab",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-10-01T23:45:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "b0e6ffe2_94939160",
+      "revId": "30f44a2ad58b45884fb7a9c741f17877b28e84ac",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "899d6015_c8f94cfc",
@@ -18,6 +36,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "9f666fb8_c37b5e17",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-10-01T23:45:42Z",
+      "side": 1,
+      "message": "I completely agree that this should be a part of x.py and the bootstrap process for Rust.  My plan is to write up a proposal for changes to the build system and present it to the group.  It would include having better flags for LTO as well as cleaning up some of the existing flags.",
+      "parentUuid": "899d6015_c8f94cfc",
+      "revId": "30f44a2ad58b45884fb7a9c741f17877b28e84ac",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "d9ec85b3_b8da7b27",
@@ -31,6 +67,24 @@
       "writtenOn": "2021-10-01T23:10:38Z",
       "side": 1,
       "message": "Sorry, I know we talked about this comment in chat, but I was on my phone and not looking at the source. This comment should be attached to line 143, \"offline fetch to regenerate lockfile\"",
+      "revId": "30f44a2ad58b45884fb7a9c741f17877b28e84ac",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a0cf83d1_0be66f21",
+        "filename": "do_build.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-10-01T23:45:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d9ec85b3_b8da7b27",
       "revId": "30f44a2ad58b45884fb7a9c741f17877b28e84ac",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
@@ -66,6 +120,24 @@
       "side": 1,
       "message": "What\u0027s weird to me is that we\u0027re passing it to the host linker as part of the script, rather than in the `host_linker_wrapper.template` below. Is it actually needed for the host linker? I thought this was working around an armv7 problem. If so, we should probably mention that bug in the wrapper script(s) and commit message too.",
       "parentUuid": "552510a5_8a8d6d0a",
+      "revId": "30f44a2ad58b45884fb7a9c741f17877b28e84ac",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4e49446e_6480307a",
+        "filename": "templates/device_linker_wrapper.template",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-10-01T23:45:42Z",
+      "side": 1,
+      "message": "Re. Steve\u0027s comments about this being necessary: I added this to be explicit about the relocation model.  I don\u0027t think it\u0027s strictly necessary but I wanted there to be evidence in the build artifacts that we explicitly asked for the linker to generate PIC.  This doesn\u0027t solve the ARMv7 issue, but that issue is called out in the comments in config.py with a link to the issue.\n\nRe. Matthew\u0027s comments: This was added directly to the wrapper because there wasn\u0027t an existing template variable it could be appended to.  I didn\u0027t like the split methodologies either but came down on the side of simplicity.  If it\u0027s bothering you as well I think that\u0027s a good enough motivation to unify the handling of this flag.",
+      "parentUuid": "e1713dde_aaacc3a0",
       "revId": "30f44a2ad58b45884fb7a9c741f17877b28e84ac",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
