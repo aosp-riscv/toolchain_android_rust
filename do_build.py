@@ -64,12 +64,24 @@ LLVM_BUILD_PATHS_OF_INTEREST: list[str] = [
     'llvm.spec'
 ]
 
+def lto_type(arg: str) -> str:
+    arg = arg.lower()
+    if arg == 'full' or arg == 'thin':
+        return arg
+    elif arg == 'none':
+        return None
+    else:
+        raise argparse.ArgumentTypeError
 
-def parse_args():
+
+def parse_args() -> argparse.ArgumentParser:
     """Parses arguments and returns the parsed structure."""
     parser = argparse.ArgumentParser('Build the Rust Toolchain')
     parser.add_argument('--build-name', type=str, default='dev',
                         help='Release name for the dist result')
+    parser.add_argument('--lto', type=lto_type, default='none',
+                        help='Type of LTO to perform. Valid LTO \
+                        types: none, thin, full')
     parser.add_argument('--no-patch-abort',
                         help='Don\'t abort on patch failure. \
                         Useful for local development.')
@@ -83,29 +95,6 @@ def main():
 
     # Add some output padding to make the messages easier to read
     print()
-
-    #
-    # Update environment variables
-    #
-
-    env = dict(os.environ)
-    env['PATH'] = os.pathsep.join(
-        [p.as_posix() for p in [
-          RUST_PREBUILT_PATH / 'bin',
-          CMAKE_PREBUILT_PATH / 'bin',
-          NINJA_PREBUILT_PATH,
-          BUILD_TOOLS_PREBUILT_PATH,
-        ]] + [env['PATH']])
-
-    # Only adjust the library path on Linux - on OSX, use the devtools curl
-    if build_platform.is_linux():
-        if 'LIBRARY_PATH' in env:
-            old_library_path = ':{0}'.format(env['LIBRARY_PATH'])
-        else:
-            old_library_path = ''
-        env['LIBRARY_PATH'] = '{0}{1}'.format(CURL_PREBUILT_PATH / 'lib', old_library_path)
-
-    env['DESTDIR'] = OUT_PATH_PACKAGE
 
     #
     # Initialize directories
@@ -136,11 +125,9 @@ def main():
     #
     # Configure Rust
     #
-    # Because some patches may have touched vendored source we will rebuild
-    # Cargo.lock
-    #
 
-    config.configure()
+    env = dict(os.environ)
+    config.configure(args, env)
 
     # Trigger bootstrap to trigger vendoring
     #
@@ -151,7 +138,10 @@ def main():
                     cwd=OUT_PATH_RUST_SOURCE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # Offline fetch to regenerate lockfile
-    res = subprocess.check_output(
+    #
+    # Because some patches may have touched vendored source we will rebuild
+    # Cargo.lock
+    subprocess.check_output(
         [RUST_PREBUILT_PATH / 'bin' / 'cargo', 'fetch', '--offline'],
         cwd=OUT_PATH_RUST_SOURCE, env=env)
 
