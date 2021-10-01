@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "899d6015_c8f94cfc",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-10-01T23:10:38Z",
+      "side": 1,
+      "message": "We shouldn\u0027t need to be passing this many custom flags in to get a LTO build working. We can land this as is, but could we consider upstreaming these modifications into some combination of x.py/assemble? \"Build rustc with LTO\" should be a config switch, and you\u0027ve shown it clearly isn\u0027t right now.",
+      "revId": "30f44a2ad58b45884fb7a9c741f17877b28e84ac",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d9ec85b3_b8da7b27",
+        "filename": "do_build.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-10-01T23:10:38Z",
+      "side": 1,
+      "message": "Sorry, I know we talked about this comment in chat, but I was on my phone and not looking at the source. This comment should be attached to line 143, \"offline fetch to regenerate lockfile\"",
+      "revId": "30f44a2ad58b45884fb7a9c741f17877b28e84ac",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "552510a5_8a8d6d0a",
+        "filename": "templates/device_linker_wrapper.template",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-10-01T23:10:38Z",
+      "side": 1,
+      "message": "Can we re-use the constant for this flag? It feels weird that the same logic for host and device is done differently (host via putting a constant into an array, device by pasting the contents of the constant into the template)",
+      "revId": "30f44a2ad58b45884fb7a9c741f17877b28e84ac",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
