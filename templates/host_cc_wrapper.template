@@ -1,2 +1,2 @@
 #!/bin/bash
-$real_cc $$* --target=$target $macosx_flags
+$real_cc $$* --target=$target $macosx_flags -fPIC
