@@ -17,7 +17,6 @@
 import argparse
 import re
 import subprocess
-import sys
 
 from paths import RUST_SOURCE_PATH
 
@@ -34,21 +33,21 @@ RUSTC_SOURCE_URL_BETA : str = "https://static.rust-lang.org/dist/rustc-beta-src.
 VERSION_PATTERN : re.Pattern = re.compile("\d+\.\d+\.\d+")
 
 
-def exec_rustc_src_command(command, error_string, stdout=subprocess.DEVNULL) -> None:
+def exec_rustc_src_command(command: str, error_string: str, stdout=subprocess.DEVNULL) -> None:
   result = subprocess.run(command, shell=True, cwd=RUST_SOURCE_PATH, stdout=stdout)
   if result.returncode != 0:
     print("{}:\n{}".format(error_string, result.stderr))
     exit(-2)
 
 
-def construct_archive_url(rust_version, beta) -> str:
+def construct_archive_url(rust_version: str, beta: bool) -> str:
   if beta:
     return RUSTC_SOURCE_URL_BETA
   else:
     return RUSTC_SOURCE_URL_VERSION_TEMPLATE % rust_version
 
 
-def version_string_type(arg_string : str) -> str:
+def version_string_type(arg_string: str) -> str:
   if VERSION_PATTERN.match(arg_string):
     return arg_string
   else:
