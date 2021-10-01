@@ -50,6 +50,24 @@
       "message": "Can we re-use the constant for this flag? It feels weird that the same logic for host and device is done differently (host via putting a constant into an array, device by pasting the contents of the constant into the template)",
       "revId": "30f44a2ad58b45884fb7a9c741f17877b28e84ac",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e1713dde_aaacc3a0",
+        "filename": "templates/device_linker_wrapper.template",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-10-01T23:25:04Z",
+      "side": 1,
+      "message": "What\u0027s weird to me is that we\u0027re passing it to the host linker as part of the script, rather than in the `host_linker_wrapper.template` below. Is it actually needed for the host linker? I thought this was working around an armv7 problem. If so, we should probably mention that bug in the wrapper script(s) and commit message too.",
+      "parentUuid": "552510a5_8a8d6d0a",
+      "revId": "30f44a2ad58b45884fb7a9c741f17877b28e84ac",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }

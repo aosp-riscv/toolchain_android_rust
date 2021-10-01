@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b0e6ffe2_94939160",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-10-01T23:25:04Z",
+      "side": 1,
+      "message": "There really should be a bug number for Rust LTO. Can you file that as a Feature Request and add the number here? I just want to be able to track this as it is a substantial chunk of work.",
+      "revId": "4e49dc3ab73e64dc9fe212ea5bc549d876f543dd",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
