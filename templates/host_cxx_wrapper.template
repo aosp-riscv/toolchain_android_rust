@@ -1,2 +1,2 @@
 #!/bin/bash
-$real_cxx $$* --target=$target -stdlib=libc++ $macosx_flags -I$cxxstd
+$real_cxx $$* --target=$target -stdlib=libc++ $macosx_flags -I$cxxstd -fPIC
