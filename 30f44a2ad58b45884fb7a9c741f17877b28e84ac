@@ -140,6 +140,24 @@
       "parentUuid": "e1713dde_aaacc3a0",
       "revId": "30f44a2ad58b45884fb7a9c741f17877b28e84ac",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "fa6777e3_119db5c9",
+        "filename": "templates/device_linker_wrapper.template",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-10-04T23:54:50Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4e49446e_6480307a",
+      "revId": "30f44a2ad58b45884fb7a9c741f17877b28e84ac",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
