@@ -21,14 +21,15 @@ import subprocess
 from paths import RUST_SOURCE_PATH
 
 
-COMMAND_GIT_ADD    : str = "git add ."
-COMMAND_GIT_COMMIT : str = "git commit --no-verify -m 'Importing rustc-%s'"
-COMMAND_GIT_RM     : str = "git rm -fr *"
-COMMAND_FETCH      : str = "curl --proto '=https' --tlsv1.2 -f %s | tar xz --strip-components=1"
-COMMAND_REPO       : str = "repo start rust-update-source-%s"
+COMMAND_GIT_ADD   : str = "git add ."
+COMMAND_GIT_COMMIT: str = "git commit --no-verify -m 'Importing rustc-%s'"
+COMMAND_GIT_RM    : str = "git rm -fr *"
+COMMAND_FETCH     : str = "curl --proto '=https' --tlsv1.2 -f %s | tar xz --strip-components=1"
+COMMAND_REPO      : str = "repo start rust-update-source-%s"
 
-RUSTC_SOURCE_URL_VERSION_TEMPLATE : str = "https://static.rust-lang.org/dist/rustc-%s-src.tar.gz"
-RUSTC_SOURCE_URL_BETA : str = "https://static.rust-lang.org/dist/rustc-beta-src.tar.gz"
+RUSTC_SOURCE_URL_VERSION_TEMPLATE: str = "https://static.rust-lang.org/dist/rustc-%s-src.tar.gz"
+RUSTC_SOURCE_URL_BETA            : str = "https://static.rust-lang.org/dist/rustc-beta-src.tar.gz"
+RUSTC_SOURCE_URL_NIGHTLY         : str = "https://static.rust-lang.org/dist/rustc-nightly-src.tar.gz"
 
 VERSION_PATTERN : re.Pattern = re.compile("\d+\.\d+\.\d+")
 
@@ -40,25 +41,39 @@ def exec_rustc_src_command(command: str, error_string: str, stdout=subprocess.DE
     exit(-2)
 
 
-def construct_archive_url(rust_version: str, beta: bool) -> str:
-  if beta:
+def construct_archive_url(args: argparse.ArgumentParser) -> str:
+  if args.nightly:
+    return RUSTC_SOURCE_URL_NIGHTLY
+  elif args.beta:
     return RUSTC_SOURCE_URL_BETA
   else:
-    return RUSTC_SOURCE_URL_VERSION_TEMPLATE % rust_version
+    return RUSTC_SOURCE_URL_VERSION_TEMPLATE % args.rust_version
 
 
 def version_string_type(arg_string: str) -> str:
   if VERSION_PATTERN.match(arg_string):
     return arg_string
   else:
-    raise argparse.ArgumentTypeError
+    raise argparse.ArgumentTypeError("Version string is not properly formatted")
+
+def get_extra_tag(args: argparse.ArgumentParser):
+  if args.nightly:
+    return '-nightly'
+  elif args.beta:
+    return '-beta'
+  else:
+    return ''
 
 
 def parse_args() -> argparse.ArgumentParser:
   parser = argparse.ArgumentParser(description='Fetch and unpack a Rust source archive')
 
-  parser.add_argument("-b", "--beta", dest="beta", action="store_true", default=False,
+  exclusive_group = parser.add_mutually_exclusive_group()
+  exclusive_group.add_argument("-b", "--beta", dest="beta", action="store_true",
     help="fetch the beta archive")
+  exclusive_group.add_argument("-n", "--nightly", dest="nightly", action="store_true",
+    help="fetch the nightly archive")
+
   parser.add_argument("rust_version", action="store", type=version_string_type)
 
   return parser.parse_args()
@@ -68,13 +83,13 @@ def main() -> None:
   args = parse_args()
 
   print("\nCreating branch")
-  command_repo = COMMAND_REPO % (args.rust_version + ("-beta" if args.beta else ""))
+  command_repo = COMMAND_REPO % (args.rust_version + get_extra_tag(args))
   exec_rustc_src_command(command_repo, "Error creating repo for source update")
 
   print("Deleting old files")
   exec_rustc_src_command(COMMAND_GIT_RM, "Error deleting old files from git")
 
-  archive_url = construct_archive_url(args.rust_version, args.beta)
+  archive_url = construct_archive_url(args)
   print("Fetching archive %s\n" % archive_url)
   exec_rustc_src_command(
     COMMAND_FETCH % archive_url,
