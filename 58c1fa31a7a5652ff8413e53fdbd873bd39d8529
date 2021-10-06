@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2e5f3faf_682ef5a0",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-10-06T07:32:49Z",
+      "side": 1,
+      "message": "+1 for now, although I think the unresolved comment would block autosubmit anyways. Thanks for adding this feature to help out with the coverage testing.",
+      "revId": "58c1fa31a7a5652ff8413e53fdbd873bd39d8529",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "45fb46e5_623a1655",
+        "filename": "do_build.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-10-06T07:32:49Z",
+      "side": 1,
+      "message": "Unrelated change? If you do keep this, should \u0027none\u0027 come first here as well to match the help text?",
+      "revId": "58c1fa31a7a5652ff8413e53fdbd873bd39d8529",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
