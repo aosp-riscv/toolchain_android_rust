@@ -64,22 +64,14 @@ LLVM_BUILD_PATHS_OF_INTEREST: list[str] = [
     'llvm.spec'
 ]
 
-def lto_type(arg: str) -> str:
-    arg = arg.lower()
-    if arg == 'full' or arg == 'thin':
-        return arg
-    elif arg == 'none':
-        return None
-    else:
-        raise argparse.ArgumentTypeError
-
 
 def parse_args() -> argparse.ArgumentParser:
     """Parses arguments and returns the parsed structure."""
     parser = argparse.ArgumentParser('Build the Rust Toolchain')
     parser.add_argument('--build-name', type=str, default='dev',
                         help='Release name for the dist result')
-    parser.add_argument('--lto', type=lto_type, default='none',
+    parser.add_argument('--lto', default='none',
+                        choices=['none', 'thin', 'full'],
                         help='Type of LTO to perform. Valid LTO \
                         types: none, thin, full')
     parser.add_argument('--no-patch-abort',
