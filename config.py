@@ -198,11 +198,14 @@ def configure(args: argparse.ArgumentParser, env: dict[str, str]):
     # Pass additional flags to the Rust compiler
     env['RUSTFLAGS'] = '-C relocation-model=pic'
 
-    # The LTO flag must be passed via the HOST_CFLAGS environment variable due
-    # to the fact that including it in the host c/cxx wrappers will cause the
+    if args.lto != 'none':
+        env['RUSTFLAGS'] += ' -C linker-plugin-lto'
+
+    # The LTO flag must be passed via the CFLAGS environment variable due to
+    # the fact that including it in the host c/cxx wrappers will cause the
     # CMake compiler detection routine to fail during LLVM configuration.
     #
-    # The Rust bootstrap system will include the value of HOST_CFLAGS in all
+    # The Rust bootstrap system will include the value of CFLAGS in all
     # invocations of either the C or C++ compiler for host targets.  The LLVM
     # build system will receive this value from the llvm::cflags and
     # llvm::cxxflags flags in the config.toml file instantiated below.
@@ -219,7 +222,11 @@ def configure(args: argparse.ArgumentParser, env: dict[str, str]):
     # Note: LTO is not enabled for device targets due to a bug either in the
     #       ARMv7 implementation of compiler-rt or in LLD, which prevents the
     #       resulting LTOed artifacts from linking properly.  See b/201551165.
-    env['HOST_CFLAGS'] = lto_flag
+    #
+    # Note: The LLVM build system will also pick up the CFLAGS environment
+    #       variable so the lto_flag will appear twice in the CMake langauge
+    #       flags variables.
+    env['CFLAGS'] = lto_flag
 
     #
     # Intantiate wrappers
