@@ -18,18 +18,18 @@ Change-Id: I65e13d08d207ad7f585ce7c4d079c4442c90b3fc
  1 file changed, 1 insertion(+), 15 deletions(-)
 
 diff --git a/library/panic_abort/src/android.rs b/library/panic_abort/src/android.rs
-index 34d77502ea..4c67322d3f 100644
+index 18bb932f10..6851b0f5cc 100644
 --- a/library/panic_abort/src/android.rs
 +++ b/library/panic_abort/src/android.rs
 @@ -3,26 +3,13 @@ use core::mem::transmute;
  use core::panic::BoxMeUp;
  use core::ptr::copy_nonoverlapping;
- 
+
 -const ANDROID_SET_ABORT_MESSAGE: &[u8] = b"android_set_abort_message\0";
 -type SetAbortMessageType = unsafe extern "C" fn(*const libc::c_char) -> ();
 -
  // Forward the abort message to libc's android_set_abort_message. We try our best to populate the
- // message but as this function may already be called as part of a failed allocation, it may not be
+ // message but as this function may already be called as part of a failed allocation, it might not be
  // possible to do so.
  //
  // Some methods of core are on purpose avoided (such as try_reserve) as these rely on the correct
@@ -51,11 +51,10 @@ index 34d77502ea..4c67322d3f 100644
 @@ -44,6 +31,5 @@ pub(crate) unsafe fn android_set_abort_message(payload: *mut &mut dyn BoxMeUp) {
      copy_nonoverlapping(msg.as_ptr(), buf as *mut u8, msg.len());
      buf.offset(msg.len() as isize).write(0);
- 
+
 -    let func = transmute::<usize, SetAbortMessageType>(func_addr);
 -    func(buf);
 +    libc::android_set_abort_message(buf);
  }
--- 
-2.32.0.402.g57bb445576-goog
-
+--
+2.33.0.882.g93a45727a2-goog
