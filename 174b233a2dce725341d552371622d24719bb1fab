@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "782b939c_07260099",
+        "filename": "config.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 231,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-10-13T00:52:22Z",
+      "side": 1,
+      "message": "ua",
+      "range": {
+        "startLine": 231,
+        "startChar": 42,
+        "endLine": 231,
+        "endChar": 44
+      },
+      "revId": "174b233a2dce725341d552371622d24719bb1fab",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
