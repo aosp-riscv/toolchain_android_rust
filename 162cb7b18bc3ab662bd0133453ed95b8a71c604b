@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a49669ef_d4f0fce1",
+        "filename": "fetch_source.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 170,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-10-18T21:54:30Z",
+      "side": 1,
+      "message": "tt",
+      "range": {
+        "startLine": 170,
+        "startChar": 41,
+        "endLine": 170,
+        "endChar": 42
+      },
+      "revId": "162cb7b18bc3ab662bd0133453ed95b8a71c604b",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
