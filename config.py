@@ -175,7 +175,7 @@ def configure(args: argparse.ArgumentParser, env: dict[str, str]):
 
     env['PATH'] = os.pathsep.join(
         [p.as_posix() for p in [
-          RUST_PREBUILT_PATH / 'bin',
+          RUST_STAGE0_PATH / 'bin',
           CMAKE_PREBUILT_PATH / 'bin',
           NINJA_PREBUILT_PATH,
           BUILD_TOOLS_PREBUILT_PATH,
