@@ -143,7 +143,7 @@ def configure(args: argparse.ArgumentParser, env: dict[str, str]):
     host_llvm_libpath:     str = '-L' + LLVM_CXX_RUNTIME_PATH.as_posix()
     host_rpath_buildtime:  str = '-Wl,-rpath,' + LLVM_CXX_RUNTIME_PATH.as_posix()
     host_rpath_runtime:    str = '-Wl,-rpath,' + (
-        '$ORIGIN/../lib64' if build_platform.is_linux() else '@loader_path/../lib64')
+        '\\$ORIGIN/../lib64' if build_platform.is_linux() else '@loader_path/../lib64')
 
     lto_flag: str = ''
     if args.lto == 'full':
