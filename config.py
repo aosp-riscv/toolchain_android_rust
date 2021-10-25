@@ -137,19 +137,12 @@ def configure(args: argparse.ArgumentParser, env: dict[str, str]):
     # Compute compiler/linker flags
     #
 
-    macosx_flags:          str = ''
-    host_ld_selector:      str = '-fuse-ld=lld' if build_platform.is_linux() else ''
-    host_bin_search:       str = ('-B' + GCC_TOOLCHAIN_PATH.as_posix()) if build_platform.is_linux() else ''
-    host_llvm_libpath:     str = '-L' + LLVM_CXX_RUNTIME_PATH.as_posix()
-    host_rpath_buildtime:  str = '-Wl,-rpath,' + LLVM_CXX_RUNTIME_PATH.as_posix()
-    host_rpath_runtime:    str = '-Wl,-rpath,' + (
-        '$ORIGIN/../lib64' if build_platform.is_linux() else '@loader_path/../lib64')
-
-    lto_flag: str = ''
-    if args.lto == 'full':
-        lto_flag = '-flto=full'
-    elif args.lto == 'thin':
-        lto_flag = '-flto=thin'
+    macosx_flags:       str = ''
+    lto_flag:           str = f"-flto={args.lto}" if args.lto != 'none' else ''
+    host_ld_selector:   str = '-fuse-ld=lld' if build_platform.is_linux() else ''
+    host_bin_search:    str = ('-B' + GCC_TOOLCHAIN_PATH.as_posix()) if build_platform.is_linux() else ''
+    host_llvm_libpath:  str = f"-L{LLVM_CXX_RUNTIME_PATH.as_posix()}"
+    host_rpath_runtime: str = f"-Wl,-rpath,{build_platform.rpath_origin()}/../lib64"
 
     if build_platform.is_darwin():
         # Apple removed the normal sysroot at / on Mojave+, so we need
@@ -167,8 +160,12 @@ def configure(args: argparse.ArgumentParser, env: dict[str, str]):
         lto_flag,
         host_bin_search,
         host_llvm_libpath,
-        host_rpath_buildtime,
         host_rpath_runtime])
+
+    # The `$` character should be escaped in the wrappers but not in the
+    # config.toml llvm:ldflags value (it causes Rust's boostrap system to
+    # complain and CMake does its own escaping).
+    host_linker_flags_escaped = host_linker_flags.replace("$", "\\$")
 
     device_linker_flags = LINKER_PIC_FLAG
 
@@ -191,6 +188,10 @@ def configure(args: argparse.ArgumentParser, env: dict[str, str]):
         else:
             old_library_path = ''
         env['LIBRARY_PATH'] = '{0}{1}'.format(CURL_PREBUILT_PATH / 'lib', old_library_path)
+
+    # Use LD_LIBRARY_PATH to tell the build system where to find libc++.so.1
+    # without polluting the rpath of the produced artifacts.
+    env['LD_LIBRARY_PATH'] = LLVM_CXX_RUNTIME_PATH.as_posix()
 
     # Tell the rust bootstrap system where to place its final products
     env['DESTDIR'] = OUT_PATH_PACKAGE
@@ -236,7 +237,7 @@ def configure(args: argparse.ArgumentParser, env: dict[str, str]):
     #
 
     host_configs = '\n'.join(
-        [host_config(target, macosx_flags, host_linker_flags) for target in HOST_TARGETS])
+        [host_config(target, macosx_flags, host_linker_flags_escaped) for target in HOST_TARGETS])
     device_configs = '\n'.join(
         [device_config(target, lto_flag, device_linker_flags) for target in DEVICE_TARGETS])
 
