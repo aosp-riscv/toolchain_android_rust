@@ -48,3 +48,10 @@ def alt_triples() -> list[str]:
     if build_os == 'darwin':
         return []
     raise RuntimeError("Unknown OS: " + build_os)
+
+def rpath_origin() -> str:
+    """Returns the string used to indicate the root loader context"""
+    if is_darwin():
+        '@loader_path'
+    else:
+        '$ORIGIN'
