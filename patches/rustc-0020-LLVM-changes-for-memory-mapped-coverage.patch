@@ -1,0 +1,1190 @@
+From e84ac896ada2b4478997296a100b813209e18589 Mon Sep 17 00:00:00 2001
+From: Pirama Arumuga Nainar <pirama@google.com>
+Date: Fri, 29 Oct 2021 12:33:50 -0700
+Subject: Cherry-pick commits for memory-mapped coverage from upstream LLVM
+
+The following commits are included:
+
+ef2627e1fa7c [profile] Add underscore to /alternatename for Win/x86
+a1532ed27582 [InstrProfiling] Make CountersPtr in __profd_ relative
+3b0a9e7b392a [profile] Move assertIsZero to InstrProfilingUtil.c
+779714f89bef [profile] Only use NT_GNU_BUILD_ID if supported
+8c4208d5c167 [Profile][NFC] Clean up initializeProfileForContinuousMode
+2129c4a861a9 Fix Windows bots failure caused by 8c4208d5c1671d1b44eaf87e8f876b7d635f5114
+5a2a17969583 [profile][Fuchsia] Add missing system header #include
+743f78ef7fca [InstrProfiling] Fix warnings when building for Windows
+94c001d64658 [profile] Build with -fms-extensions in MinGW mode
+4cfb047d6ab3 [profile] Don't use pragma comment linker on mingw
+6c0e6f91d7f0 [profile] Add static keyword to binary id functions
+66e2772e4285 [InstrProfiling] Support relative CountersPtr for PlatformOther
+68ab571e22e7 [sanitizer] Fix for CMAKE_CXX_FLAGS update
+8111f2f7eef5 [profile] Update counter offset to account for binary ids
+1b05245119dd [Profile] Support __llvm_profile_set_file_object in continuous mode.
+b35e636e40b5 [Sanitizers] PGO implements enable/disable SIGKILL on callers on FreeBSD.
+
+Change-Id: I5e93f002bf4dc6b06004bb4fc3aa409ead2bf68f
+---
+ .../Profile/c-linkage-available_externally.c  |   2 +-
+ .../include/profile/InstrProfData.inc         |   7 +-
+ .../compiler-rt/lib/gwp_asan/CMakeLists.txt   |   2 +-
+ .../compiler-rt/lib/profile/CMakeLists.txt    |   2 +-
+ .../compiler-rt/lib/profile/InstrProfiling.h  |  14 +-
+ .../lib/profile/InstrProfilingFile.c          | 476 +++++++++---------
+ .../lib/profile/InstrProfilingMerge.c         |  32 +-
+ .../profile/InstrProfilingPlatformFuchsia.c   |   3 +-
+ .../lib/profile/InstrProfilingPlatformLinux.c |  21 +-
+ .../lib/profile/InstrProfilingPlatformOther.c |  10 +-
+ .../lib/profile/InstrProfilingUtil.c          |  14 +
+ .../lib/profile/InstrProfilingWriter.c        |   6 +
+ .../lib/scudo/standalone/CMakeLists.txt       |   2 +-
+ .../ContinuousSyncMode/set-file-object.c      |  96 +++-
+ .../llvm/ProfileData/InstrProfData.inc        |   7 +-
+ .../llvm/lib/ProfileData/InstrProfReader.cpp  |   8 +
+ .../Instrumentation/InstrProfiling.cpp        |  20 +-
+ .../tools/llvm-profdata/raw-32-bits-be.test   |   2 +-
+ .../tools/llvm-profdata/raw-32-bits-le.test   |   2 +-
+ .../tools/llvm-profdata/raw-64-bits-be.test   |   2 +-
+ .../tools/llvm-profdata/raw-64-bits-le.test   |   2 +-
+ 21 files changed, 418 insertions(+), 312 deletions(-)
+
+diff --git a/src/llvm-project/clang/test/Profile/c-linkage-available_externally.c b/src/llvm-project/clang/test/Profile/c-linkage-available_externally.c
+index 5ac777b267..5482fabc0a 100644
+--- a/src/llvm-project/clang/test/Profile/c-linkage-available_externally.c
++++ b/src/llvm-project/clang/test/Profile/c-linkage-available_externally.c
+@@ -3,7 +3,7 @@
+ // RUN: %clang_cc1 -O2 -triple x86_64-apple-macosx10.9 -main-file-name c-linkage-available_externally.c %s -o - -emit-llvm -fprofile-instrument=clang | FileCheck %s
+ 
+ // CHECK: @__profc_foo = linkonce_odr hidden global [1 x i64] zeroinitializer, section "__DATA,__llvm_prf_cnts", align 8
+-// CHECK: @__profd_foo = linkonce_odr hidden global {{.*}} i64* getelementptr inbounds ([1 x i64], [1 x i64]* @__profc_foo, i32 0, i32 0){{.*}}, section "__DATA,__llvm_prf_data,regular,live_support", align 8
++// CHECK: @__profd_foo = linkonce_odr hidden global {{.*}} i64 sub (i64 ptrtoint ([1 x i64]* @__profc_foo to i64), i64 ptrtoint ({ i64, i64, i64, i8*, i8*, i32, [2 x i16] }* @__profd_foo to i64)), {{.*}}, section "__DATA,__llvm_prf_data,regular,live_support", align 8
+ inline int foo(void) { return 1; }
+ 
+ int main(void) {
+diff --git a/src/llvm-project/compiler-rt/include/profile/InstrProfData.inc b/src/llvm-project/compiler-rt/include/profile/InstrProfData.inc
+index 7d2097cfc2..cb2d6a60e5 100644
+--- a/src/llvm-project/compiler-rt/include/profile/InstrProfData.inc
++++ b/src/llvm-project/compiler-rt/include/profile/InstrProfData.inc
+@@ -75,9 +75,7 @@ INSTR_PROF_DATA(const uint64_t, llvm::Type::getInt64Ty(Ctx), NameRef, \
+ INSTR_PROF_DATA(const uint64_t, llvm::Type::getInt64Ty(Ctx), FuncHash, \
+                 ConstantInt::get(llvm::Type::getInt64Ty(Ctx), \
+                 Inc->getHash()->getZExtValue()))
+-INSTR_PROF_DATA(const IntPtrT, llvm::Type::getInt64PtrTy(Ctx), CounterPtr, \
+-                ConstantExpr::getBitCast(CounterPtr, \
+-                llvm::Type::getInt64PtrTy(Ctx)))
++INSTR_PROF_DATA(const IntPtrT, IntPtrTy, CounterPtr, RelativeCounterPtr)
+ /* This is used to map function pointers for the indirect call targets to
+  * function name hashes during the conversion from raw to merged profile
+  * data.
+@@ -135,7 +133,8 @@ INSTR_PROF_RAW_HEADER(uint64_t, PaddingBytesBeforeCounters, PaddingBytesBeforeCo
+ INSTR_PROF_RAW_HEADER(uint64_t, CountersSize, CountersSize)
+ INSTR_PROF_RAW_HEADER(uint64_t, PaddingBytesAfterCounters, PaddingBytesAfterCounters)
+ INSTR_PROF_RAW_HEADER(uint64_t, NamesSize,  NamesSize)
+-INSTR_PROF_RAW_HEADER(uint64_t, CountersDelta, (uintptr_t)CountersBegin)
++INSTR_PROF_RAW_HEADER(uint64_t, CountersDelta,
++                      (uintptr_t)CountersBegin - (uintptr_t)DataBegin)
+ INSTR_PROF_RAW_HEADER(uint64_t, NamesDelta, (uintptr_t)NamesBegin)
+ INSTR_PROF_RAW_HEADER(uint64_t, ValueKindLast, IPVK_Last)
+ #undef INSTR_PROF_RAW_HEADER
+diff --git a/src/llvm-project/compiler-rt/lib/gwp_asan/CMakeLists.txt b/src/llvm-project/compiler-rt/lib/gwp_asan/CMakeLists.txt
+index 638f7034d9..4bce00933c 100644
+--- a/src/llvm-project/compiler-rt/lib/gwp_asan/CMakeLists.txt
++++ b/src/llvm-project/compiler-rt/lib/gwp_asan/CMakeLists.txt
+@@ -38,7 +38,7 @@ set(GWP_ASAN_CFLAGS ${SANITIZER_COMMON_CFLAGS} -fno-rtti -fno-exceptions
+ append_list_if(COMPILER_RT_HAS_FPIC_FLAG -fPIC GWP_ASAN_CFLAGS)
+ 
+ # Remove -stdlib= which is unused when passing -nostdinc++.
+-string(REGEX REPLACE "-stdlib=[a-zA-Z+]*" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
++string(REGEX REPLACE "-stdlib=[a-zA-Z+]*" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+ 
+ # Options parsing support is optional. This is an optional library that can be
+ # used by an allocator to automatically parse GwpAsan options from the
+diff --git a/src/llvm-project/compiler-rt/lib/profile/CMakeLists.txt b/src/llvm-project/compiler-rt/lib/profile/CMakeLists.txt
+index f5e13574b7..42a2740e2a 100644
+--- a/src/llvm-project/compiler-rt/lib/profile/CMakeLists.txt
++++ b/src/llvm-project/compiler-rt/lib/profile/CMakeLists.txt
+@@ -113,7 +113,7 @@ endif()
+ # We don't use the C++ Standard Library here, so avoid including it by mistake.
+ append_list_if(COMPILER_RT_HAS_NOSTDINCXX_FLAG -nostdinc++ EXTRA_FLAGS)
+ # XRay uses C++ standard library headers.
+-string(REGEX REPLACE "-stdlib=[a-zA-Z+]*" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
++string(REGEX REPLACE "-stdlib=[a-zA-Z+]*" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+ 
+ # This appears to be a C-only warning banning the use of locals in aggregate
+ # initializers. All other compilers accept this, though.
+diff --git a/src/llvm-project/compiler-rt/lib/profile/InstrProfiling.h b/src/llvm-project/compiler-rt/lib/profile/InstrProfiling.h
+index 237acb33ff..2e601b8ccb 100644
+--- a/src/llvm-project/compiler-rt/lib/profile/InstrProfiling.h
++++ b/src/llvm-project/compiler-rt/lib/profile/InstrProfiling.h
+@@ -194,7 +194,8 @@ int __llvm_orderfile_dump(void);
+ void __llvm_profile_set_filename(const char *Name);
+ 
+ /*!
+- * \brief Set the FILE object for writing instrumentation data.
++ * \brief Set the FILE object for writing instrumentation data. Return 0 if set
++ * successfully or return 1 if failed.
+  *
+  * Sets the FILE object to be used for subsequent calls to
+  * \a __llvm_profile_write_file(). The profile file name set by environment
+@@ -213,13 +214,12 @@ void __llvm_profile_set_filename(const char *Name);
+  * instrumented image/DSO). This API only modifies the file object within the
+  * copy of the runtime available to the calling image.
+  *
+- * Warning: This is a no-op if continuous mode (\ref
+- * __llvm_profile_is_continuous_mode_enabled) is on. The reason for this is
+- * that in continuous mode, profile counters are mmap()'d to the profile at
+- * program initialization time. Support for transferring the mmap'd profile
+- * counts to a new file has not been implemented.
++ * Warning: This is a no-op if EnableMerge is 0 in continuous mode (\ref
++ * __llvm_profile_is_continuous_mode_enabled), because disable merging requires
++ * copying the old profile file to new profile file and this function is usually
++ * used when the proess doesn't have permission to open file.
+  */
+-void __llvm_profile_set_file_object(FILE *File, int EnableMerge);
++int __llvm_profile_set_file_object(FILE *File, int EnableMerge);
+ 
+ /*! \brief Register to write instrumentation data to file at exit. */
+ int __llvm_profile_register_write_file_atexit(void);
+diff --git a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingFile.c b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingFile.c
+index afc2582d89..2070f93e39 100644
+--- a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingFile.c
++++ b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingFile.c
+@@ -92,6 +92,146 @@ static lprofFilename lprofCurFilename = {0,   0, 0, {0}, NULL,
+                                          {0}, 0, 0, 0,   PNS_unknown};
+ 
+ static int ProfileMergeRequested = 0;
++static int getProfileFileSizeForMerging(FILE *ProfileFile,
++                                        uint64_t *ProfileFileSize);
++
++#if defined(__APPLE__)
++static const int ContinuousModeSupported = 1;
++static const int UseBiasVar = 0;
++static const char *FileOpenMode = "a+b";
++static void *BiasAddr = NULL;
++static void *BiasDefaultAddr = NULL;
++static int mmapForContinuousMode(uint64_t CurrentFileOffset, FILE *File) {
++  /* Get the sizes of various profile data sections. Taken from
++   * __llvm_profile_get_size_for_buffer(). */
++  const __llvm_profile_data *DataBegin = __llvm_profile_begin_data();
++  const __llvm_profile_data *DataEnd = __llvm_profile_end_data();
++  const uint64_t *CountersBegin = __llvm_profile_begin_counters();
++  const uint64_t *CountersEnd = __llvm_profile_end_counters();
++  const char *NamesBegin = __llvm_profile_begin_names();
++  const char *NamesEnd = __llvm_profile_end_names();
++  const uint64_t NamesSize = (NamesEnd - NamesBegin) * sizeof(char);
++  uint64_t DataSize = __llvm_profile_get_data_size(DataBegin, DataEnd);
++  uint64_t CountersSize = CountersEnd - CountersBegin;
++
++  /* Check that the counter and data sections in this image are
++   * page-aligned. */
++  unsigned PageSize = getpagesize();
++  if ((intptr_t)CountersBegin % PageSize != 0) {
++    PROF_ERR("Counters section not page-aligned (start = %p, pagesz = %u).\n",
++             CountersBegin, PageSize);
++    return 1;
++  }
++  if ((intptr_t)DataBegin % PageSize != 0) {
++    PROF_ERR("Data section not page-aligned (start = %p, pagesz = %u).\n",
++             DataBegin, PageSize);
++    return 1;
++  }
++  int Fileno = fileno(File);
++  /* Determine how much padding is needed before/after the counters and
++   * after the names. */
++  uint64_t PaddingBytesBeforeCounters, PaddingBytesAfterCounters,
++      PaddingBytesAfterNames;
++  __llvm_profile_get_padding_sizes_for_counters(
++      DataSize, CountersSize, NamesSize, &PaddingBytesBeforeCounters,
++      &PaddingBytesAfterCounters, &PaddingBytesAfterNames);
++
++  uint64_t PageAlignedCountersLength =
++      (CountersSize * sizeof(uint64_t)) + PaddingBytesAfterCounters;
++  uint64_t FileOffsetToCounters =
++      CurrentFileOffset + sizeof(__llvm_profile_header) +
++      (DataSize * sizeof(__llvm_profile_data)) + PaddingBytesBeforeCounters;
++  uint64_t *CounterMmap = (uint64_t *)mmap(
++      (void *)CountersBegin, PageAlignedCountersLength, PROT_READ | PROT_WRITE,
++      MAP_FIXED | MAP_SHARED, Fileno, FileOffsetToCounters);
++  if (CounterMmap != CountersBegin) {
++    PROF_ERR(
++        "Continuous counter sync mode is enabled, but mmap() failed (%s).\n"
++        "  - CountersBegin: %p\n"
++        "  - PageAlignedCountersLength: %" PRIu64 "\n"
++        "  - Fileno: %d\n"
++        "  - FileOffsetToCounters: %" PRIu64 "\n",
++        strerror(errno), CountersBegin, PageAlignedCountersLength, Fileno,
++        FileOffsetToCounters);
++    return 1;
++  }
++  return 0;
++}
++#elif defined(__ELF__) || defined(_WIN32)
++
++#define INSTR_PROF_PROFILE_COUNTER_BIAS_DEFAULT_VAR                            \
++  INSTR_PROF_CONCAT(INSTR_PROF_PROFILE_COUNTER_BIAS_VAR, _default)
++intptr_t INSTR_PROF_PROFILE_COUNTER_BIAS_DEFAULT_VAR = 0;
++
++/* This variable is a weak external reference which could be used to detect
++ * whether or not the compiler defined this symbol. */
++#if defined(_MSC_VER)
++COMPILER_RT_VISIBILITY extern intptr_t INSTR_PROF_PROFILE_COUNTER_BIAS_VAR;
++#if defined(_M_IX86) || defined(__i386__)
++#define WIN_SYM_PREFIX "_"
++#else
++#define WIN_SYM_PREFIX
++#endif
++#pragma comment(                                                               \
++    linker, "/alternatename:" WIN_SYM_PREFIX INSTR_PROF_QUOTE(                 \
++                INSTR_PROF_PROFILE_COUNTER_BIAS_VAR) "=" WIN_SYM_PREFIX        \
++                INSTR_PROF_QUOTE(INSTR_PROF_PROFILE_COUNTER_BIAS_DEFAULT_VAR))
++#else
++COMPILER_RT_VISIBILITY extern intptr_t INSTR_PROF_PROFILE_COUNTER_BIAS_VAR
++    __attribute__((weak, alias(INSTR_PROF_QUOTE(
++                             INSTR_PROF_PROFILE_COUNTER_BIAS_DEFAULT_VAR))));
++#endif
++static const int ContinuousModeSupported = 1;
++static const int UseBiasVar = 1;
++/* TODO: If there are two DSOs, the second DSO initilization will truncate the
++ * first profile file. */
++static const char *FileOpenMode = "w+b";
++/* This symbol is defined by the compiler when runtime counter relocation is
++ * used and runtime provides a weak alias so we can check if it's defined. */
++static void *BiasAddr = &INSTR_PROF_PROFILE_COUNTER_BIAS_VAR;
++static void *BiasDefaultAddr = &INSTR_PROF_PROFILE_COUNTER_BIAS_DEFAULT_VAR;
++static int mmapForContinuousMode(uint64_t CurrentFileOffset, FILE *File) {
++  /* Get the sizes of various profile data sections. Taken from
++   * __llvm_profile_get_size_for_buffer(). */
++  const __llvm_profile_data *DataBegin = __llvm_profile_begin_data();
++  const __llvm_profile_data *DataEnd = __llvm_profile_end_data();
++  const uint64_t *CountersBegin = __llvm_profile_begin_counters();
++  const uint64_t *CountersEnd = __llvm_profile_end_counters();
++  uint64_t DataSize = __llvm_profile_get_data_size(DataBegin, DataEnd);
++  /* Get the file size. */
++  uint64_t FileSize = 0;
++  if (getProfileFileSizeForMerging(File, &FileSize))
++    return 1;
++
++  /* Map the profile. */
++  char *Profile = (char *)mmap(NULL, FileSize, PROT_READ | PROT_WRITE,
++                               MAP_SHARED, fileno(File), 0);
++  if (Profile == MAP_FAILED) {
++    PROF_ERR("Unable to mmap profile: %s\n", strerror(errno));
++    return 1;
++  }
++  const uint64_t CountersOffsetInBiasMode =
++      sizeof(__llvm_profile_header) + __llvm_write_binary_ids(NULL) +
++      (DataSize * sizeof(__llvm_profile_data));
++  /* Update the profile fields based on the current mapping. */
++  INSTR_PROF_PROFILE_COUNTER_BIAS_VAR =
++      (intptr_t)Profile - (uintptr_t)CountersBegin + CountersOffsetInBiasMode;
++
++  /* Return the memory allocated for counters to OS. */
++  lprofReleaseMemoryPagesToOS((uintptr_t)CountersBegin, (uintptr_t)CountersEnd);
++  return 0;
++}
++#else
++static const int ContinuousModeSupported = 0;
++static const int UseBiasVar = 0;
++static const char *FileOpenMode = "a+b";
++static void *BiasAddr = NULL;
++static void *BiasDefaultAddr = NULL;
++static int mmapForContinuousMode(uint64_t CurrentFileOffset, FILE *File) {
++  return 0;
++}
++#endif
++
+ static int isProfileMergeRequested() { return ProfileMergeRequested; }
+ static void setProfileMergeRequested(int EnableMerge) {
+   ProfileMergeRequested = EnableMerge;
+@@ -101,18 +241,6 @@ static FILE *ProfileFile = NULL;
+ static FILE *getProfileFile() { return ProfileFile; }
+ static void setProfileFile(FILE *File) { ProfileFile = File; }
+ 
+-COMPILER_RT_VISIBILITY void __llvm_profile_set_file_object(FILE *File,
+-                                                           int EnableMerge) {
+-  if (__llvm_profile_is_continuous_mode_enabled()) {
+-    PROF_WARN("__llvm_profile_set_file_object(fd=%d) not supported, because "
+-              "continuous sync mode (%%c) is enabled",
+-              fileno(File));
+-    return;
+-  }
+-  setProfileFile(File);
+-  setProfileMergeRequested(EnableMerge);
+-}
+-
+ static int getCurFilenameLength();
+ static const char *getCurFilename(char *FilenameBuf, int ForceUseBuf);
+ static unsigned doMerging() {
+@@ -426,13 +554,6 @@ static void truncateCurrentFile(void) {
+   fclose(File);
+ }
+ 
+-// TODO: Move these functions into InstrProfilingPlatform* files.
+-#if defined(__APPLE__)
+-static void assertIsZero(int *i) {
+-  if (*i)
+-    PROF_WARN("Expected flag to be 0, but got: %d\n", *i);
+-}
+-
+ /* Write a partial profile to \p Filename, which is required to be backed by
+  * the open file object \p File. */
+ static int writeProfileWithFileObject(const char *Filename, FILE *File) {
+@@ -444,215 +565,22 @@ static int writeProfileWithFileObject(const char *Filename, FILE *File) {
+   return rc;
+ }
+ 
+-/* Unlock the profile \p File and clear the unlock flag. */
+-static void unlockProfile(int *ProfileRequiresUnlock, FILE *File) {
+-  if (!*ProfileRequiresUnlock) {
+-    PROF_WARN("%s", "Expected to require profile unlock\n");
+-  }
+-
+-  lprofUnlockFileHandle(File);
+-  *ProfileRequiresUnlock = 0;
+-}
+-
+ static void initializeProfileForContinuousMode(void) {
+   if (!__llvm_profile_is_continuous_mode_enabled())
+     return;
+-
+-  /* Get the sizes of various profile data sections. Taken from
+-   * __llvm_profile_get_size_for_buffer(). */
+-  const __llvm_profile_data *DataBegin = __llvm_profile_begin_data();
+-  const __llvm_profile_data *DataEnd = __llvm_profile_end_data();
+-  const uint64_t *CountersBegin = __llvm_profile_begin_counters();
+-  const uint64_t *CountersEnd = __llvm_profile_end_counters();
+-  const char *NamesBegin = __llvm_profile_begin_names();
+-  const char *NamesEnd = __llvm_profile_end_names();
+-  const uint64_t NamesSize = (NamesEnd - NamesBegin) * sizeof(char);
+-  uint64_t DataSize = __llvm_profile_get_data_size(DataBegin, DataEnd);
+-  uint64_t CountersSize = CountersEnd - CountersBegin;
+-
+-  /* Check that the counter and data sections in this image are page-aligned. */
+-  unsigned PageSize = getpagesize();
+-  if ((intptr_t)CountersBegin % PageSize != 0) {
+-    PROF_ERR("Counters section not page-aligned (start = %p, pagesz = %u).\n",
+-             CountersBegin, PageSize);
+-    return;
+-  }
+-  if ((intptr_t)DataBegin % PageSize != 0) {
+-    PROF_ERR("Data section not page-aligned (start = %p, pagesz = %u).\n",
+-             DataBegin, PageSize);
++  if (!ContinuousModeSupported) {
++    PROF_ERR("%s\n", "continuous mode is unsupported on this platform");
+     return;
+   }
+-
+-  int Length = getCurFilenameLength();
+-  char *FilenameBuf = (char *)COMPILER_RT_ALLOCA(Length + 1);
+-  const char *Filename = getCurFilename(FilenameBuf, 0);
+-  if (!Filename)
+-    return;
+-
+-  FILE *File = NULL;
+-  off_t CurrentFileOffset = 0;
+-  off_t OffsetModPage = 0;
+-
+-  /* Whether an exclusive lock on the profile must be dropped after init.
+-   * Use a cleanup to warn if the unlock does not occur. */
+-  COMPILER_RT_CLEANUP(assertIsZero) int ProfileRequiresUnlock = 0;
+-
+-  if (!doMerging()) {
+-    /* We are not merging profiles, so open the raw profile in append mode. */
+-    File = fopen(Filename, "a+b");
+-    if (!File)
+-      return;
+-
+-    /* Check that the offset within the file is page-aligned. */
+-    CurrentFileOffset = ftello(File);
+-    OffsetModPage = CurrentFileOffset % PageSize;
+-    if (OffsetModPage != 0) {
+-      PROF_ERR("Continuous counter sync mode is enabled, but raw profile is not"
+-               "page-aligned. CurrentFileOffset = %" PRIu64 ", pagesz = %u.\n",
+-               (uint64_t)CurrentFileOffset, PageSize);
+-      return;
+-    }
+-
+-    /* Grow the profile so that mmap() can succeed.  Leak the file handle, as
+-     * the file should stay open. */
+-    if (writeProfileWithFileObject(Filename, File) != 0)
+-      return;
+-  } else {
+-    /* We are merging profiles. Map the counter section as shared memory into
+-     * the profile, i.e. into each participating process. An increment in one
+-     * process should be visible to every other process with the same counter
+-     * section mapped. */
+-    File = lprofOpenFileEx(Filename);
+-    if (!File)
+-      return;
+-
+-    ProfileRequiresUnlock = 1;
+-
+-    uint64_t ProfileFileSize;
+-    if (getProfileFileSizeForMerging(File, &ProfileFileSize) == -1)
+-      return unlockProfile(&ProfileRequiresUnlock, File);
+-
+-    if (ProfileFileSize == 0) {
+-      /* Grow the profile so that mmap() can succeed.  Leak the file handle, as
+-       * the file should stay open. */
+-      if (writeProfileWithFileObject(Filename, File) != 0)
+-        return unlockProfile(&ProfileRequiresUnlock, File);
+-    } else {
+-      /* The merged profile has a non-zero length. Check that it is compatible
+-       * with the data in this process. */
+-      char *ProfileBuffer;
+-      if (mmapProfileForMerging(File, ProfileFileSize, &ProfileBuffer) == -1 ||
+-          munmap(ProfileBuffer, ProfileFileSize) == -1)
+-        return unlockProfile(&ProfileRequiresUnlock, File);
+-    }
+-  }
+-
+-  /* mmap() the profile counters so long as there is at least one counter.
+-   * If there aren't any counters, mmap() would fail with EINVAL. */
+-  if (CountersSize > 0) {
+-    int Fileno = fileno(File);
+-
+-    /* Determine how much padding is needed before/after the counters and after
+-     * the names. */
+-    uint64_t PaddingBytesBeforeCounters, PaddingBytesAfterCounters,
+-        PaddingBytesAfterNames;
+-    __llvm_profile_get_padding_sizes_for_counters(
+-        DataSize, CountersSize, NamesSize, &PaddingBytesBeforeCounters,
+-        &PaddingBytesAfterCounters, &PaddingBytesAfterNames);
+-
+-    uint64_t PageAlignedCountersLength =
+-        (CountersSize * sizeof(uint64_t)) + PaddingBytesAfterCounters;
+-    uint64_t FileOffsetToCounters =
+-        CurrentFileOffset + sizeof(__llvm_profile_header) +
+-        (DataSize * sizeof(__llvm_profile_data)) + PaddingBytesBeforeCounters;
+-
+-    uint64_t *CounterMmap = (uint64_t *)mmap(
+-        (void *)CountersBegin, PageAlignedCountersLength, PROT_READ | PROT_WRITE,
+-        MAP_FIXED | MAP_SHARED, Fileno, FileOffsetToCounters);
+-    if (CounterMmap != CountersBegin) {
+-      PROF_ERR(
+-          "Continuous counter sync mode is enabled, but mmap() failed (%s).\n"
+-          "  - CountersBegin: %p\n"
+-          "  - PageAlignedCountersLength: %" PRIu64 "\n"
+-          "  - Fileno: %d\n"
+-          "  - FileOffsetToCounters: %" PRIu64 "\n",
+-          strerror(errno), CountersBegin, PageAlignedCountersLength, Fileno,
+-          FileOffsetToCounters);
+-    }
+-  }
+-
+-  if (ProfileRequiresUnlock)
+-    unlockProfile(&ProfileRequiresUnlock, File);
+-}
+-#elif defined(__ELF__) || defined(_WIN32)
+-
+-#define INSTR_PROF_PROFILE_COUNTER_BIAS_DEFAULT_VAR                            \
+-  INSTR_PROF_CONCAT(INSTR_PROF_PROFILE_COUNTER_BIAS_VAR, _default)
+-intptr_t INSTR_PROF_PROFILE_COUNTER_BIAS_DEFAULT_VAR = 0;
+-
+-/* This variable is a weak external reference which could be used to detect
+- * whether or not the compiler defined this symbol. */
+-#if defined(_MSC_VER)
+-COMPILER_RT_VISIBILITY extern intptr_t INSTR_PROF_PROFILE_COUNTER_BIAS_VAR;
+-#pragma comment(linker, "/alternatename:"                                      \
+-      INSTR_PROF_QUOTE(INSTR_PROF_PROFILE_COUNTER_BIAS_VAR) "="                \
+-      INSTR_PROF_QUOTE(INSTR_PROF_PROFILE_COUNTER_BIAS_DEFAULT_VAR))
+-#else
+-COMPILER_RT_VISIBILITY extern intptr_t INSTR_PROF_PROFILE_COUNTER_BIAS_VAR
+-    __attribute__((weak, alias(INSTR_PROF_QUOTE(
+-                             INSTR_PROF_PROFILE_COUNTER_BIAS_DEFAULT_VAR))));
+-#endif
+-
+-static int writeMMappedFile(FILE *OutputFile, char **Profile) {
+-  if (!OutputFile)
+-    return -1;
+-
+-  /* Write the data into a file. */
+-  setupIOBuffer();
+-  ProfDataWriter fileWriter;
+-  initFileWriter(&fileWriter, OutputFile);
+-  if (lprofWriteData(&fileWriter, NULL, 0)) {
+-    PROF_ERR("Failed to write profile: %s\n", strerror(errno));
+-    return -1;
+-  }
+-  fflush(OutputFile);
+-
+-  /* Get the file size. */
+-  uint64_t FileSize = ftell(OutputFile);
+-
+-  /* Map the profile. */
+-  *Profile = (char *)mmap(
+-      NULL, FileSize, PROT_READ | PROT_WRITE, MAP_SHARED, fileno(OutputFile), 0);
+-  if (*Profile == MAP_FAILED) {
+-    PROF_ERR("Unable to mmap profile: %s\n", strerror(errno));
+-    return -1;
+-  }
+-
+-  return 0;
+-}
+-
+-static void initializeProfileForContinuousMode(void) {
+-  if (!__llvm_profile_is_continuous_mode_enabled())
+-    return;
+-
+-  /* This symbol is defined by the compiler when runtime counter relocation is
+-   * used and runtime provides a weak alias so we can check if it's defined. */
+-  void *BiasAddr = &INSTR_PROF_PROFILE_COUNTER_BIAS_VAR;
+-  void *BiasDefaultAddr = &INSTR_PROF_PROFILE_COUNTER_BIAS_DEFAULT_VAR;
+-  if (BiasAddr == BiasDefaultAddr) {
++  if (UseBiasVar && BiasAddr == BiasDefaultAddr) {
+     PROF_ERR("%s\n", "__llvm_profile_counter_bias is undefined");
+     return;
+   }
+ 
+-  /* Get the sizes of various profile data sections. Taken from
+-   * __llvm_profile_get_size_for_buffer(). */
+-  const __llvm_profile_data *DataBegin = __llvm_profile_begin_data();
+-  const __llvm_profile_data *DataEnd = __llvm_profile_end_data();
++  /* Get the sizes of counter section. */
+   const uint64_t *CountersBegin = __llvm_profile_begin_counters();
+   const uint64_t *CountersEnd = __llvm_profile_end_counters();
+-  uint64_t DataSize = __llvm_profile_get_data_size(DataBegin, DataEnd);
+-  const uint64_t CountersOffset =
+-      sizeof(__llvm_profile_header) + (DataSize * sizeof(__llvm_profile_data));
++  uint64_t CountersSize = CountersEnd - CountersBegin;
+ 
+   int Length = getCurFilenameLength();
+   char *FilenameBuf = (char *)COMPILER_RT_ALLOCA(Length + 1);
+@@ -661,18 +589,12 @@ static void initializeProfileForContinuousMode(void) {
+     return;
+ 
+   FILE *File = NULL;
+-  char *Profile = NULL;
+-
+-  if (!doMerging()) {
+-    File = fopen(Filename, "w+b");
+-    if (!File)
+-      return;
+-
+-    if (writeMMappedFile(File, &Profile) == -1) {
+-      fclose(File);
+-      return;
+-    }
+-  } else {
++  uint64_t CurrentFileOffset = 0;
++  if (doMerging()) {
++    /* We are merging profiles. Map the counter section as shared memory into
++     * the profile, i.e. into each participating process. An increment in one
++     * process should be visible to every other process with the same counter
++     * section mapped. */
+     File = lprofOpenFileEx(Filename);
+     if (!File)
+       return;
+@@ -683,37 +605,54 @@ static void initializeProfileForContinuousMode(void) {
+       fclose(File);
+       return;
+     }
+-
+-    if (!ProfileFileSize) {
+-      if (writeMMappedFile(File, &Profile) == -1) {
++    if (ProfileFileSize == 0) {
++      /* Grow the profile so that mmap() can succeed.  Leak the file handle, as
++       * the file should stay open. */
++      if (writeProfileWithFileObject(Filename, File) != 0) {
++        lprofUnlockFileHandle(File);
+         fclose(File);
+         return;
+       }
+     } else {
+       /* The merged profile has a non-zero length. Check that it is compatible
+        * with the data in this process. */
+-      if (mmapProfileForMerging(File, ProfileFileSize, &Profile) == -1) {
++      char *ProfileBuffer;
++      if (mmapProfileForMerging(File, ProfileFileSize, &ProfileBuffer) == -1) {
++        lprofUnlockFileHandle(File);
+         fclose(File);
+         return;
+       }
++      (void)munmap(ProfileBuffer, ProfileFileSize);
++    }
++  } else {
++    File = fopen(Filename, FileOpenMode);
++    if (!File)
++      return;
++    /* Check that the offset within the file is page-aligned. */
++    CurrentFileOffset = ftell(File);
++    unsigned PageSize = getpagesize();
++    if (CurrentFileOffset % PageSize != 0) {
++      PROF_ERR("Continuous counter sync mode is enabled, but raw profile is not"
++               "page-aligned. CurrentFileOffset = %" PRIu64 ", pagesz = %u.\n",
++               (uint64_t)CurrentFileOffset, PageSize);
++      return;
++    }
++    if (writeProfileWithFileObject(Filename, File) != 0) {
++      fclose(File);
++      return;
+     }
+-
+-    lprofUnlockFileHandle(File);
+   }
+ 
+-  /* Update the profile fields based on the current mapping. */
+-  INSTR_PROF_PROFILE_COUNTER_BIAS_VAR =
+-      (intptr_t)Profile - (uintptr_t)CountersBegin +
+-      CountersOffset;
++  /* mmap() the profile counters so long as there is at least one counter.
++   * If there aren't any counters, mmap() would fail with EINVAL. */
++  if (CountersSize > 0)
++    mmapForContinuousMode(CurrentFileOffset, File);
+ 
+-  /* Return the memory allocated for counters to OS. */
+-  lprofReleaseMemoryPagesToOS((uintptr_t)CountersBegin, (uintptr_t)CountersEnd);
+-}
+-#else
+-static void initializeProfileForContinuousMode(void) {
+-  PROF_ERR("%s\n", "continuous mode is unsupported on this platform");
++  if (doMerging()) {
++    lprofUnlockFileHandle(File);
++    fclose(File);
++  }
+ }
+-#endif
+ 
+ static const char *DefaultProfileName = "default.profraw";
+ static void resetFilenameToDefault(void) {
+@@ -1205,4 +1144,49 @@ int __llvm_profile_register_write_file_atexit(void) {
+   return atexit(writeFileWithoutReturn);
+ }
+ 
++COMPILER_RT_VISIBILITY int __llvm_profile_set_file_object(FILE *File,
++                                                          int EnableMerge) {
++  if (__llvm_profile_is_continuous_mode_enabled()) {
++    if (!EnableMerge) {
++      PROF_WARN("__llvm_profile_set_file_object(fd=%d) not supported in "
++                "continuous sync mode when merging is disabled\n",
++                fileno(File));
++      return 1;
++    }
++    lprofLockFileHandle(File);
++    uint64_t ProfileFileSize = 0;
++    if (getProfileFileSizeForMerging(File, &ProfileFileSize) == -1) {
++      lprofUnlockFileHandle(File);
++      return 1;
++    }
++    if (ProfileFileSize == 0) {
++      FreeHook = &free;
++      setupIOBuffer();
++      ProfDataWriter fileWriter;
++      initFileWriter(&fileWriter, File);
++      if (lprofWriteData(&fileWriter, 0, 0)) {
++        lprofUnlockFileHandle(File);
++        PROF_ERR("Failed to write file \"%d\": %s\n", fileno(File),
++                 strerror(errno));
++        return 1;
++      }
++    } else {
++      /* The merged profile has a non-zero length. Check that it is compatible
++       * with the data in this process. */
++      char *ProfileBuffer;
++      if (mmapProfileForMerging(File, ProfileFileSize, &ProfileBuffer) == -1) {
++        lprofUnlockFileHandle(File);
++        return 1;
++      }
++      (void)munmap(ProfileBuffer, ProfileFileSize);
++    }
++    mmapForContinuousMode(0, File);
++    lprofUnlockFileHandle(File);
++  } else {
++    setProfileFile(File);
++    setProfileMergeRequested(EnableMerge);
++  }
++  return 0;
++}
++
+ #endif
+diff --git a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingMerge.c b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingMerge.c
+index 16ebc2f8b2..674b1898b0 100644
+--- a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingMerge.c
++++ b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingMerge.c
+@@ -83,6 +83,14 @@ int __llvm_profile_check_compatibility(const char *ProfileData,
+   return 0;
+ }
+ 
++static uintptr_t signextIfWin64(void *V) {
++#ifdef _WIN64
++  return (uintptr_t)(int32_t)(uintptr_t)V;
++#else
++  return (uintptr_t)V;
++#endif
++}
++
+ COMPILER_RT_VISIBILITY
+ int __llvm_profile_merge_from_buffer(const char *ProfileData,
+                                      uint64_t ProfileSize) {
+@@ -91,6 +99,7 @@ int __llvm_profile_merge_from_buffer(const char *ProfileData,
+   uint64_t *SrcCountersStart;
+   const char *SrcNameStart;
+   const char *SrcValueProfDataStart, *SrcValueProfData;
++  uintptr_t CountersDelta = Header->CountersDelta;
+ 
+   SrcDataStart =
+       (__llvm_profile_data *)(ProfileData + sizeof(__llvm_profile_header) +
+@@ -108,15 +117,30 @@ int __llvm_profile_merge_from_buffer(const char *ProfileData,
+       DstData = (__llvm_profile_data *)__llvm_profile_begin_data(),
+       SrcValueProfData = SrcValueProfDataStart;
+        SrcData < SrcDataEnd; ++SrcData, ++DstData) {
+-    uint64_t *DstCounters = (uint64_t *)DstData->CounterPtr;
++    // For the in-memory destination, CounterPtr is the distance from the start
++    // address of the data to the start address of the counter. On WIN64,
++    // CounterPtr is a truncated 32-bit value due to COFF limitation. Sign
++    // extend CounterPtr to get the original value.
++    uint64_t *DstCounters =
++        (uint64_t *)((uintptr_t)DstData + signextIfWin64(DstData->CounterPtr));
+     unsigned NVK = 0;
+ 
++    // SrcData is a serialized representation of the memory image. We need to
++    // compute the in-buffer counter offset from the in-memory address distance.
++    // The initial CountersDelta is the in-memory address difference
++    // start(__llvm_prf_cnts)-start(__llvm_prf_data), so SrcData->CounterPtr -
++    // CountersDelta computes the offset into the in-buffer counter section.
++    //
++    // On WIN64, CountersDelta is truncated as well, so no need for signext.
++    uint64_t *SrcCounters =
++        SrcCountersStart +
++        ((uintptr_t)SrcData->CounterPtr - CountersDelta) / sizeof(uint64_t);
++    // CountersDelta needs to be decreased as we advance to the next data
++    // record.
++    CountersDelta -= sizeof(*SrcData);
+     unsigned NC = SrcData->NumCounters;
+     if (NC == 0)
+       return 1;
+-    uint64_t *SrcCounters = SrcCountersStart + ((size_t)SrcData->CounterPtr -
+-                                                Header->CountersDelta) /
+-                                                   sizeof(uint64_t);
+     if (SrcCounters < SrcCountersStart ||
+         (const char *)SrcCounters >= SrcNameStart ||
+         (const char *)(SrcCounters + NC) > SrcNameStart)
+diff --git a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingPlatformFuchsia.c b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingPlatformFuchsia.c
+index 0146b14c19..7de6aa83f8 100644
+--- a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingPlatformFuchsia.c
++++ b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingPlatformFuchsia.c
+@@ -120,7 +120,8 @@ void __llvm_profile_initialize(void) {
+   const uint64_t *CountersEnd = __llvm_profile_end_counters();
+   const uint64_t DataSize = __llvm_profile_get_data_size(DataBegin, DataEnd);
+   const uint64_t CountersOffset =
+-      sizeof(__llvm_profile_header) + (DataSize * sizeof(__llvm_profile_data));
++      sizeof(__llvm_profile_header) + __llvm_write_binary_ids(NULL) +
++      (DataSize * sizeof(__llvm_profile_data));
+   uint64_t CountersSize = CountersEnd - CountersBegin;
+ 
+   /* Don't publish a VMO if there are no counters. */
+diff --git a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingPlatformLinux.c b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingPlatformLinux.c
+index d1922e27ae..5d47083b8b 100644
+--- a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingPlatformLinux.c
++++ b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingPlatformLinux.c
+@@ -85,6 +85,7 @@ COMPILER_RT_VISIBILITY ValueProfNode *__llvm_profile_end_vnodes(void) {
+ COMPILER_RT_VISIBILITY ValueProfNode *CurrentVNode = &PROF_VNODES_START;
+ COMPILER_RT_VISIBILITY ValueProfNode *EndVNode = &PROF_VNODES_STOP;
+ 
++#ifdef NT_GNU_BUILD_ID
+ static size_t RoundUp(size_t size, size_t align) {
+   return (size + align - 1) & ~(align - 1);
+ }
+@@ -93,8 +94,8 @@ static size_t RoundUp(size_t size, size_t align) {
+  * Write binary id length and then its data, because binary id does not
+  * have a fixed length.
+  */
+-int WriteOneBinaryId(ProfDataWriter *Writer, uint64_t BinaryIdLen,
+-                     const uint8_t *BinaryIdData) {
++static int WriteOneBinaryId(ProfDataWriter *Writer, uint64_t BinaryIdLen,
++                            const uint8_t *BinaryIdData) {
+   ProfDataIOVec BinaryIdIOVec[] = {
+       {&BinaryIdLen, sizeof(uint64_t), 1, 0},
+       {BinaryIdData, sizeof(uint8_t), BinaryIdLen, 0}};
+@@ -118,7 +119,8 @@ int WriteOneBinaryId(ProfDataWriter *Writer, uint64_t BinaryIdLen,
+  * Note sections like .note.ABI-tag and .note.gnu.build-id are aligned
+  * to 4 bytes, so round n_namesz and n_descsz to the nearest 4 bytes.
+  */
+-int WriteBinaryIdForNote(ProfDataWriter *Writer, const ElfW(Nhdr) * Note) {
++static int WriteBinaryIdForNote(ProfDataWriter *Writer,
++                                const ElfW(Nhdr) * Note) {
+   int BinaryIdSize = 0;
+ 
+   const char *NoteName = (const char *)Note + sizeof(ElfW(Nhdr));
+@@ -143,8 +145,8 @@ int WriteBinaryIdForNote(ProfDataWriter *Writer, const ElfW(Nhdr) * Note) {
+  * If writer is given, write binary ids into profiles.
+  * If an error happens while writing, return -1.
+  */
+-int WriteBinaryIds(ProfDataWriter *Writer, const ElfW(Nhdr) * Note,
+-                   const ElfW(Nhdr) * NotesEnd) {
++static int WriteBinaryIds(ProfDataWriter *Writer, const ElfW(Nhdr) * Note,
++                          const ElfW(Nhdr) * NotesEnd) {
+   int TotalBinaryIdsSize = 0;
+   while (Note < NotesEnd) {
+     int Result = WriteBinaryIdForNote(Writer, Note);
+@@ -188,5 +190,14 @@ COMPILER_RT_VISIBILITY int __llvm_write_binary_ids(ProfDataWriter *Writer) {
+ 
+   return 0;
+ }
++#else /* !NT_GNU_BUILD_ID */
++/*
++ * Fallback implementation for targets that don't support the GNU
++ * extensions NT_GNU_BUILD_ID and __ehdr_start.
++ */
++COMPILER_RT_VISIBILITY int __llvm_write_binary_ids(ProfDataWriter *Writer) {
++  return 0;
++}
++#endif
+ 
+ #endif
+diff --git a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingPlatformOther.c b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingPlatformOther.c
+index 0e59148e20..48946ce942 100644
+--- a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingPlatformOther.c
++++ b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingPlatformOther.c
+@@ -46,17 +46,19 @@ void __llvm_profile_register_function(void *Data_) {
+   if (!DataFirst) {
+     DataFirst = Data;
+     DataLast = Data + 1;
+-    CountersFirst = Data->CounterPtr;
+-    CountersLast = (uint64_t *)Data->CounterPtr + Data->NumCounters;
++    CountersFirst = (uint64_t *)((uintptr_t)Data_ + Data->CounterPtr);
++    CountersLast = CountersFirst + Data->NumCounters;
+     return;
+   }
+ 
+   DataFirst = (const __llvm_profile_data *)getMinAddr(DataFirst, Data);
+-  CountersFirst = (uint64_t *)getMinAddr(CountersFirst, Data->CounterPtr);
++  CountersFirst = (uint64_t *)getMinAddr(
++      CountersFirst, (uint64_t *)((uintptr_t)Data_ + Data->CounterPtr));
+ 
+   DataLast = (const __llvm_profile_data *)getMaxAddr(DataLast, Data + 1);
+   CountersLast = (uint64_t *)getMaxAddr(
+-      CountersLast, (uint64_t *)Data->CounterPtr + Data->NumCounters);
++      CountersLast,
++      (uint64_t *)((uintptr_t)Data_ + Data->CounterPtr) + Data->NumCounters);
+ }
+ 
+ COMPILER_RT_VISIBILITY
+diff --git a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingUtil.c b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingUtil.c
+index 4fa792b72e..76b88432b0 100644
+--- a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingUtil.c
++++ b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingUtil.c
+@@ -34,9 +34,15 @@
+ #endif
+ 
+ #if defined(__Fuchsia__)
++#include <zircon/process.h>
+ #include <zircon/syscalls.h>
+ #endif
+ 
++#if defined(__FreeBSD__)
++#include <signal.h>
++#include <sys/procctl.h>
++#endif
++
+ #include "InstrProfiling.h"
+ #include "InstrProfilingUtil.h"
+ 
+@@ -325,6 +331,11 @@ COMPILER_RT_VISIBILITY int lprofSuspendSigKill() {
+   if (prctl(PR_GET_PDEATHSIG, &PDeachSig) == 0 && PDeachSig == SIGKILL)
+     prctl(PR_SET_PDEATHSIG, 0);
+   return (PDeachSig == SIGKILL);
++#elif defined(__FreeBSD__)
++  int PDeachSig = 0, PDisableSig = 0;
++  if (procctl(P_PID, 0, PROC_PDEATHSIG_STATUS, &PDeachSig) == 0 &&
++      PDeachSig == SIGKILL)
++    procctl(P_PID, 0, PROC_PDEATHSIG_CTL, &PDisableSig);
+ #else
+   return 0;
+ #endif
+@@ -333,6 +344,9 @@ COMPILER_RT_VISIBILITY int lprofSuspendSigKill() {
+ COMPILER_RT_VISIBILITY void lprofRestoreSigKill() {
+ #if defined(__linux__)
+   prctl(PR_SET_PDEATHSIG, SIGKILL);
++#elif defined(__FreeBSD__)
++  int PEnableSig = SIGKILL;
++  procctl(P_PID, 0, PROC_PDEATHSIG_CTL, &PEnableSig);
+ #endif
+ }
+ 
+diff --git a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingWriter.c b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingWriter.c
+index 25f6302932..5ed968f218 100644
+--- a/src/llvm-project/compiler-rt/lib/profile/InstrProfilingWriter.c
++++ b/src/llvm-project/compiler-rt/lib/profile/InstrProfilingWriter.c
+@@ -283,6 +283,12 @@ lprofWriteDataImpl(ProfDataWriter *Writer, const __llvm_profile_data *DataBegin,
+ #define INSTR_PROF_RAW_HEADER(Type, Name, Init) Header.Name = Init;
+ #include "profile/InstrProfData.inc"
+ 
++  /* On WIN64, label differences are truncated 32-bit values. Truncate
++   * CountersDelta to match. */
++#ifdef _WIN64
++  Header.CountersDelta = (uint32_t)Header.CountersDelta;
++#endif
++
+   /* Write the profile header. */
+   ProfDataIOVec IOVec[] = {{&Header, sizeof(__llvm_profile_header), 1, 0}};
+   if (Writer->Write(Writer, IOVec, sizeof(IOVec) / sizeof(*IOVec)))
+diff --git a/src/llvm-project/compiler-rt/lib/scudo/standalone/CMakeLists.txt b/src/llvm-project/compiler-rt/lib/scudo/standalone/CMakeLists.txt
+index 8c3708d3a4..053ab2fc41 100644
+--- a/src/llvm-project/compiler-rt/lib/scudo/standalone/CMakeLists.txt
++++ b/src/llvm-project/compiler-rt/lib/scudo/standalone/CMakeLists.txt
+@@ -11,7 +11,7 @@ list(APPEND SCUDO_CFLAGS
+   -nostdinc++)
+ 
+ # Remove -stdlib= which is unused when passing -nostdinc++.
+-string(REGEX REPLACE "-stdlib=[a-zA-Z+]*" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
++string(REGEX REPLACE "-stdlib=[a-zA-Z+]*" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+ 
+ append_list_if(COMPILER_RT_HAS_FVISIBILITY_HIDDEN_FLAG -fvisibility=hidden SCUDO_CFLAGS)
+ 
+diff --git a/src/llvm-project/compiler-rt/test/profile/ContinuousSyncMode/set-file-object.c b/src/llvm-project/compiler-rt/test/profile/ContinuousSyncMode/set-file-object.c
+index 4eea457531..72013d2317 100644
+--- a/src/llvm-project/compiler-rt/test/profile/ContinuousSyncMode/set-file-object.c
++++ b/src/llvm-project/compiler-rt/test/profile/ContinuousSyncMode/set-file-object.c
+@@ -1,34 +1,84 @@
+-// REQUIRES: darwin
++// REQUIRES: darwin || linux
+ 
+-// RUN: %clang_pgogen -o %t.exe %s
+-// RUN: env LLVM_PROFILE_FILE="%c%t.profraw" %run %t.exe %t.bad 2>&1 | FileCheck %s
++// Test using __llvm_profile_set_file_object in continuous mode (%c).
++// Create & cd into a temporary directory.
++// RUN: rm -rf %t.dir && mkdir -p %t.dir && cd %t.dir
+ 
+-// CHECK: __llvm_profile_set_file_object(fd={{[0-9]+}}) not supported
+-// CHECK: Profile data not written to file: already written.
++// The -mllvm -runtime-counter-relocation=true flag has effect only on linux.
++// RUN: %clang -fprofile-instr-generate -fcoverage-mapping -mllvm -instrprof-atomic-counter-update-all=1 -mllvm -runtime-counter-relocation=true -o main.exe %s
+ 
+-#include <stdio.h>
++// Test continuous mode with __llvm_profile_set_file_object with mergin disabled.
++// RUN: env LLVM_PROFILE_FILE="%t.dir/profdir/%c%mprofraw.old" %run  %t.dir/main.exe nomerge %t.dir/profdir/profraw.new 2>&1 | FileCheck %s -check-prefix=WARN
++// WARN: LLVM Profile Warning: __llvm_profile_set_file_object(fd={{[0-9]+}}) not supported in continuous sync mode when merging is disabled
+ 
+-extern int __llvm_profile_is_continuous_mode_enabled(void);
+-extern void __llvm_profile_set_file_object(FILE *, int);
+-extern int __llvm_profile_write_file(void);
++// Test continuous mode with __llvm_profile_set_file_object with mergin enabled.
++// RUN: rm -rf %t.dir/profdir/
++// RUN: env LLVM_PROFILE_FILE="%t.dir/profdir/%c%mprofraw.old" %run  %t.dir/main.exe merge %t.dir/profdir/profraw.new 'LLVM_PROFILE_FILE=%t.dir/profdir/%c%m.profraw'
++// RUN: llvm-profdata merge -o %t.dir/profdir/profdata %t.dir/profdir/profraw.new
++// RUN: llvm-profdata show --counts --all-functions %t.dir/profdir/profdata | FileCheck %s -check-prefix=MERGE
++// RUN: llvm-profdata show --counts --all-functions %t.dir/profdir/*profraw.old | FileCheck %s -check-prefix=ZERO
+ 
+-int main(int argc, char **argv) {
+-  if (!__llvm_profile_is_continuous_mode_enabled())
+-    return 1;
++// MERGE: Counters:
++// MERGE:   coverage_test:
++// MERGE:     Hash: {{.*}}
++// MERGE:     Counters: 1
++// MERGE:     Function count: 32
++// MERGE:     Block counts: []
++// MERGE: Instrumentation level: Front-end
++
++// ZERO: Counters:
++// ZERO:   coverage_test:
++// ZERO:     Hash: {{.*}}
++// ZERO:     Counters: 1
++// ZERO:     Function count: 0
++// ZERO:     Block counts: []
++// ZERO: Instrumentation level: Front-end
+ 
+-  FILE *f = fopen(argv[1], "a+b");
+-  if (!f)
+-    return 1;
++#include <spawn.h>
++#include <stdio.h>
++#include <string.h>
+ 
+-  __llvm_profile_set_file_object(f, 0); // Try to set the file to "%t.bad".
++const int num_child_procs_to_spawn = 32;
+ 
+-  if (__llvm_profile_write_file() != 0)
+-    return 1;
++extern int __llvm_profile_is_continuous_mode_enabled(void);
++extern int __llvm_profile_set_file_object(FILE *, int);
+ 
+-  f = fopen(argv[1], "r");
+-  if (!f)
+-    return 1;
++int coverage_test() {
++  return 0;
++}
+ 
+-  fseek(f, 0, SEEK_END);
+-  return ftell(f); // Check that the "%t.bad" is empty.
++int main(int argc, char **argv) {
++  char *file_name = argv[2];
++  FILE *file = fopen(file_name, "a+b");
++  if (strcmp(argv[1], "nomerge") == 0)
++    __llvm_profile_set_file_object(file, 0);
++  else if (strcmp(argv[1], "merge") == 0) {
++    // Parent process.
++    int I;
++    pid_t child_pids[num_child_procs_to_spawn];
++    char *const child_argv[] = {argv[0], "set", file_name, NULL};
++    char *const child_envp[] = {argv[3], NULL};
++    for (I = 0; I < num_child_procs_to_spawn; ++I) {
++      int ret =
++          posix_spawn(&child_pids[I], argv[0], NULL, NULL, child_argv, child_envp);
++      if (ret != 0) {
++        fprintf(stderr, "Child %d could not be spawned: ret = %d, msg = %s\n",
++                I, ret, strerror(ret));
++        return 1;
++      }
++    }
++  } else if (strcmp(argv[1], "set") == 0) {
++    // Child processes.
++    if (!__llvm_profile_is_continuous_mode_enabled()) {
++      fprintf(stderr, "Continuous mode disabled\n");
++      return 1;
++    }
++    if (__llvm_profile_set_file_object(file, 1)) {
++      fprintf(stderr, "Call to __llvm_profile_set_file_object failed\n");
++      return 1;
++    }
++    // After set file object, counter should be written into new file.
++    coverage_test();
++  }
++  return 0;
+ }
+diff --git a/src/llvm-project/llvm/include/llvm/ProfileData/InstrProfData.inc b/src/llvm-project/llvm/include/llvm/ProfileData/InstrProfData.inc
+index 7d2097cfc2..cb2d6a60e5 100644
+--- a/src/llvm-project/llvm/include/llvm/ProfileData/InstrProfData.inc
++++ b/src/llvm-project/llvm/include/llvm/ProfileData/InstrProfData.inc
+@@ -75,9 +75,7 @@ INSTR_PROF_DATA(const uint64_t, llvm::Type::getInt64Ty(Ctx), NameRef, \
+ INSTR_PROF_DATA(const uint64_t, llvm::Type::getInt64Ty(Ctx), FuncHash, \
+                 ConstantInt::get(llvm::Type::getInt64Ty(Ctx), \
+                 Inc->getHash()->getZExtValue()))
+-INSTR_PROF_DATA(const IntPtrT, llvm::Type::getInt64PtrTy(Ctx), CounterPtr, \
+-                ConstantExpr::getBitCast(CounterPtr, \
+-                llvm::Type::getInt64PtrTy(Ctx)))
++INSTR_PROF_DATA(const IntPtrT, IntPtrTy, CounterPtr, RelativeCounterPtr)
+ /* This is used to map function pointers for the indirect call targets to
+  * function name hashes during the conversion from raw to merged profile
+  * data.
+@@ -135,7 +133,8 @@ INSTR_PROF_RAW_HEADER(uint64_t, PaddingBytesBeforeCounters, PaddingBytesBeforeCo
+ INSTR_PROF_RAW_HEADER(uint64_t, CountersSize, CountersSize)
+ INSTR_PROF_RAW_HEADER(uint64_t, PaddingBytesAfterCounters, PaddingBytesAfterCounters)
+ INSTR_PROF_RAW_HEADER(uint64_t, NamesSize,  NamesSize)
+-INSTR_PROF_RAW_HEADER(uint64_t, CountersDelta, (uintptr_t)CountersBegin)
++INSTR_PROF_RAW_HEADER(uint64_t, CountersDelta,
++                      (uintptr_t)CountersBegin - (uintptr_t)DataBegin)
+ INSTR_PROF_RAW_HEADER(uint64_t, NamesDelta, (uintptr_t)NamesBegin)
+ INSTR_PROF_RAW_HEADER(uint64_t, ValueKindLast, IPVK_Last)
+ #undef INSTR_PROF_RAW_HEADER
+diff --git a/src/llvm-project/llvm/lib/ProfileData/InstrProfReader.cpp b/src/llvm-project/llvm/lib/ProfileData/InstrProfReader.cpp
+index a0460062f3..d7b8844ff6 100644
+--- a/src/llvm-project/llvm/lib/ProfileData/InstrProfReader.cpp
++++ b/src/llvm-project/llvm/lib/ProfileData/InstrProfReader.cpp
+@@ -437,7 +437,15 @@ Error RawInstrProfReader<IntPtrT>::readRawCounts(
+   // may itself be corrupt.
+   if (MaxNumCounters < 0 || NumCounters > (uint32_t)MaxNumCounters)
+     return error(instrprof_error::malformed);
++
++  // We need to compute the in-buffer counter offset from the in-memory address
++  // distance. The initial CountersDelta is the in-memory address difference
++  // start(__llvm_prf_cnts)-start(__llvm_prf_data), so SrcData->CounterPtr -
++  // CountersDelta computes the offset into the in-buffer counter section.
++  //
++  // CountersDelta decreases as we advance to the next data record.
+   ptrdiff_t CounterOffset = getCounterOffset(CounterPtr);
++  CountersDelta -= sizeof(*Data);
+   if (CounterOffset < 0 || CounterOffset > MaxNumCounters ||
+       ((uint32_t)CounterOffset + NumCounters) > (uint32_t)MaxNumCounters)
+     return error(instrprof_error::malformed);
+diff --git a/src/llvm-project/llvm/lib/Transforms/Instrumentation/InstrProfiling.cpp b/src/llvm-project/llvm/lib/Transforms/Instrumentation/InstrProfiling.cpp
+index 0d257bb6bd..6ec7fde12c 100644
+--- a/src/llvm-project/llvm/lib/Transforms/Instrumentation/InstrProfiling.cpp
++++ b/src/llvm-project/llvm/lib/Transforms/Instrumentation/InstrProfiling.cpp
+@@ -920,6 +920,7 @@ InstrProfiling::getOrCreateRegionCounters(InstrProfIncrementInst *Inc) {
+   }
+ 
+   // Create data variable.
++  auto *IntPtrTy = M->getDataLayout().getIntPtrType(M->getContext());
+   auto *Int16Ty = Type::getInt16Ty(Ctx);
+   auto *Int16ArrayTy = ArrayType::get(Int16Ty, IPVK_Last + 1);
+   Type *DataTypes[] = {
+@@ -936,10 +937,6 @@ InstrProfiling::getOrCreateRegionCounters(InstrProfIncrementInst *Inc) {
+   for (uint32_t Kind = IPVK_First; Kind <= IPVK_Last; ++Kind)
+     Int16ArrayVals[Kind] = ConstantInt::get(Int16Ty, PD.NumValueSites[Kind]);
+ 
+-  Constant *DataVals[] = {
+-#define INSTR_PROF_DATA(Type, LLVMType, Name, Init) Init,
+-#include "llvm/ProfileData/InstrProfData.inc"
+-  };
+   // If the data variable is not referenced by code (if we don't emit
+   // @llvm.instrprof.value.profile, NS will be 0), and the counter keeps the
+   // data variable live under linker GC, the data variable can be private. This
+@@ -953,8 +950,19 @@ InstrProfiling::getOrCreateRegionCounters(InstrProfIncrementInst *Inc) {
+     Visibility = GlobalValue::DefaultVisibility;
+   }
+   auto *Data =
+-      new GlobalVariable(*M, DataTy, false, Linkage,
+-                         ConstantStruct::get(DataTy, DataVals), DataVarName);
++      new GlobalVariable(*M, DataTy, false, Linkage, nullptr, DataVarName);
++  // Reference the counter variable with a label difference (link-time
++  // constant).
++  auto *RelativeCounterPtr =
++      ConstantExpr::getSub(ConstantExpr::getPtrToInt(CounterPtr, IntPtrTy),
++                           ConstantExpr::getPtrToInt(Data, IntPtrTy));
++
++  Constant *DataVals[] = {
++#define INSTR_PROF_DATA(Type, LLVMType, Name, Init) Init,
++#include "llvm/ProfileData/InstrProfData.inc"
++  };
++  Data->setInitializer(ConstantStruct::get(DataTy, DataVals));
++
+   Data->setVisibility(Visibility);
+   Data->setSection(getInstrProfSectionName(IPSK_data, TT.getObjectFormat()));
+   Data->setAlignment(Align(INSTR_PROF_DATA_ALIGNMENT));
+diff --git a/src/llvm-project/llvm/test/tools/llvm-profdata/raw-32-bits-be.test b/src/llvm-project/llvm/test/tools/llvm-profdata/raw-32-bits-be.test
+index 2d1eb7a500..308873a41b 100644
+--- a/src/llvm-project/llvm/test/tools/llvm-profdata/raw-32-bits-be.test
++++ b/src/llvm-project/llvm/test/tools/llvm-profdata/raw-32-bits-be.test
+@@ -20,7 +20,7 @@ RUN: printf '\0\0\0\0\0\0\0\0' >> %t
+ 
+ RUN: printf '\344\023\165\112\031\035\265\067' >> %t
+ RUN: printf '\0\0\0\0\0\0\0\2' >> %t
+-RUN: printf '\1\0\0\10' >> %t
++RUN: printf '\0\xff\xff\xe0' >> %t
+ RUN: printf '\0\0\0\0' >> %t
+ RUN: printf '\0\0\0\0' >> %t
+ RUN: printf '\0\0\0\2' >> %t
+diff --git a/src/llvm-project/llvm/test/tools/llvm-profdata/raw-32-bits-le.test b/src/llvm-project/llvm/test/tools/llvm-profdata/raw-32-bits-le.test
+index 5b35ac4173..cae72827aa 100644
+--- a/src/llvm-project/llvm/test/tools/llvm-profdata/raw-32-bits-le.test
++++ b/src/llvm-project/llvm/test/tools/llvm-profdata/raw-32-bits-le.test
+@@ -20,7 +20,7 @@ RUN: printf '\0\0\0\0\0\0\0\0' >> %t
+ 
+ RUN: printf '\067\265\035\031\112\165\023\344' >> %t
+ RUN: printf '\02\0\0\0\0\0\0\0' >> %t
+-RUN: printf '\10\0\0\1' >> %t
++RUN: printf '\xe0\xff\xff\0' >> %t
+ RUN: printf '\0\0\0\0' >> %t
+ RUN: printf '\0\0\0\0' >> %t
+ RUN: printf '\2\0\0\0' >> %t
+diff --git a/src/llvm-project/llvm/test/tools/llvm-profdata/raw-64-bits-be.test b/src/llvm-project/llvm/test/tools/llvm-profdata/raw-64-bits-be.test
+index 3e9db300e5..a39e9f4f44 100644
+--- a/src/llvm-project/llvm/test/tools/llvm-profdata/raw-64-bits-be.test
++++ b/src/llvm-project/llvm/test/tools/llvm-profdata/raw-64-bits-be.test
+@@ -19,7 +19,7 @@ RUN: printf '\0\0\0\1\0\0\0\0' >> %t
+ 
+ RUN: printf '\344\023\165\112\031\035\265\067' >> %t
+ RUN: printf '\0\0\0\0\0\0\0\02' >> %t
+-RUN: printf '\0\0\0\1\0\4\0\10' >> %t
++RUN: printf '\0\0\0\1\0\3\xff\xd8' >> %t
+ RUN: printf '\0\0\0\0\0\0\0\0' >> %t
+ RUN: printf '\0\0\0\0\0\0\0\0' >> %t
+ RUN: printf '\0\0\0\02\0\0\0\0' >> %t
+diff --git a/src/llvm-project/llvm/test/tools/llvm-profdata/raw-64-bits-le.test b/src/llvm-project/llvm/test/tools/llvm-profdata/raw-64-bits-le.test
+index 86624e9a1d..e0bdf22345 100644
+--- a/src/llvm-project/llvm/test/tools/llvm-profdata/raw-64-bits-le.test
++++ b/src/llvm-project/llvm/test/tools/llvm-profdata/raw-64-bits-le.test
+@@ -19,7 +19,7 @@ RUN: printf '\1\0\0\0\0\0\0\0' >> %t
+ 
+ RUN: printf '\067\265\035\031\112\165\023\344' >> %t
+ RUN: printf '\02\0\0\0\0\0\0\0' >> %t
+-RUN: printf '\10\0\4\0\1\0\0\0' >> %t
++RUN: printf '\xd8\xff\3\0\1\0\0\0' >> %t
+ RUN: printf '\0\0\0\0\0\0\0\0' >> %t
+ RUN: printf '\0\0\0\0\0\0\0\0' >> %t
+ RUN: printf '\02\0\0\0\0\0\0\0' >> %t
+-- 
+2.33.1.1089.g2158813163f-goog
+
