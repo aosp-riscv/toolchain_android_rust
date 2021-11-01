@@ -1,0 +1,46 @@
+From 4dcd55462707653aff0b677c723ad3c87149d2cd Mon Sep 17 00:00:00 2001
+From: Pirama Arumuga Nainar <pirama@google.com>
+Date: Mon, 1 Nov 2021 12:39:42 -0700
+Subject: coverage: Use coverage mapping version 6
+
+LLVM's coverage mapping version format changed to Version6 (enum value 5
+due to zero indexing) since LLVM 13.  Generate that version to
+get coverage for mixed C++/Rust binaries.
+
+Change-Id: Ifeb1bfa3a0fdc25bce230ddafbbe7239ce909ea7
+---
+ compiler/rustc_codegen_llvm/src/coverageinfo/mapgen.rs      | 2 +-
+ compiler/rustc_llvm/llvm-wrapper/CoverageMappingWrapper.cpp | 4 +++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/compiler/rustc_codegen_llvm/src/coverageinfo/mapgen.rs b/compiler/rustc_codegen_llvm/src/coverageinfo/mapgen.rs
+index d2a2e739ff..e6c90468eb 100644
+--- a/compiler/rustc_codegen_llvm/src/coverageinfo/mapgen.rs
++++ b/compiler/rustc_codegen_llvm/src/coverageinfo/mapgen.rs
+@@ -33,7 +33,7 @@ pub fn finalize<'ll, 'tcx>(cx: &CodegenCx<'ll, 'tcx>) {
+     // Ensure LLVM supports Coverage Map Version 4 (encoded as a zero-based value: 3).
+     // If not, the LLVM Version must be less than 11.
+     let version = coverageinfo::mapping_version();
+-    if version != 3 {
++    if version < 3 {
+         tcx.sess.fatal("rustc option `-Z instrument-coverage` requires LLVM 11 or higher.");
+     }
+ 
+diff --git a/compiler/rustc_llvm/llvm-wrapper/CoverageMappingWrapper.cpp b/compiler/rustc_llvm/llvm-wrapper/CoverageMappingWrapper.cpp
+index 35cca04b20..29ee52a4fd 100644
+--- a/compiler/rustc_llvm/llvm-wrapper/CoverageMappingWrapper.cpp
++++ b/compiler/rustc_llvm/llvm-wrapper/CoverageMappingWrapper.cpp
+@@ -111,7 +111,9 @@ extern "C" void LLVMRustCoverageWriteMappingVarNameToString(RustStringRef Str) {
+ }
+ 
+ extern "C" uint32_t LLVMRustCoverageMappingVersion() {
+-#if LLVM_VERSION_GE(11, 0)
++#if LLVM_VERSION_GE(13, 0)
++  return coverage::CovMapVersion::Version6;
++#elif LLVM_VERSION_GE(11, 0)
+   return coverage::CovMapVersion::Version4;
+ #else
+   return coverage::CovMapVersion::Version3;
+-- 
+2.33.1.1089.g2158813163f-goog
+
