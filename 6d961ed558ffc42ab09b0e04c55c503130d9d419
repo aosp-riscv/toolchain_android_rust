@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c183a224_94ba1fcc",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-11-02T21:37:47Z",
+      "side": 1,
+      "message": "With us moving to git submodules, I\u0027m not sure manifests will be there forever, maybe Dan can weigh in on whether the manifest is the best way for us to record how the prebuilt was created?\n\nBuild IDs are sufficient to figure it out internally, but either the output of `git submodule` (no arguments) or a `manifest.xml` snapshot file is more explicit transparent.",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8cbe715b_98fab384",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-11-02T21:37:47Z",
+      "side": 1,
+      "message": "Will this potentially do the wrong thing if there\u0027s something in the cache with the wrong bid or target from a previous run?",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "ce8960ef_b01bf959",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-11-02T21:37:47Z",
+      "side": 1,
+      "message": "I feel like this should be autodetectable (unless we want to do e.g. 1.55.0p1 or similar if Rust hasn\u0027t re-released, but we want to), but we don\u0027t need to do that in this CL.",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a031a01e_a4d265a0",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-11-02T21:37:47Z",
+      "side": 1,
+      "message": "Again, not in this change, but maybe this tool should also produce the commits for:\n* Updating build/soong\n* Deleting the old rustc\n* Updating STAGE0 in the rustc build.\n\nAnyone doing this step would almost always want those commits too, even if they aren\u0027t going to land them all at the same time.",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
