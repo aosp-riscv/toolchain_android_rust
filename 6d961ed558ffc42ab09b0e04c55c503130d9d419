@@ -126,6 +126,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "c97c9e8a_7e07274e",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-11-02T23:12:59Z",
+      "side": 1,
+      "message": "Yeah, I was assuming we\u0027d run `unpacked/rustc --version`. If we want to be able to do re-releases, that would only work if our re-releases included an internal bump to the rustc version which I don\u0027t think is supported (since they would bump it to 1.55.1, which we explicitly would want to avoid). This is much more minor, but would basically be another step towards fully automating the process (e.g. once every 6 weeks, a set of CLs is produced and automatically tested by CI, and *then* handed off to us for review after it works or breaks). Patch releases requiring a manual version specification would not be a problem for that, as they wouldn\u0027t be part of a fully automated roller.",
+      "parentUuid": "981ff092_a5d169e6",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "a031a01e_a4d265a0",
         "filename": "update_prebuilts.py",
         "patchSetId": 5
@@ -155,6 +173,24 @@
       "side": 1,
       "message": "The only one of those I see a problem with is the build/soong change.  The Rust toolchain manifest doesn\u0027t include build/soong so you\u0027d have to supply a path to an AOSP tree.",
       "parentUuid": "a031a01e_a4d265a0",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "afd62c96_255e2c0d",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-11-02T23:12:59Z",
+      "side": 1,
+      "message": "If we did this, we could map build/soong into the Rust toolchain manifest just for this. There should be a regex for which projects trigger a rebuild, so we could just not include build/soong in that list.",
+      "parentUuid": "e0ee5a55_229a8913",
       "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
