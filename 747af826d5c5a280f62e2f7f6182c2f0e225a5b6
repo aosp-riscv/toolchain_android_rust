@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ae49d6d2_d4b2eef6",
+        "filename": "fetch_source.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-11-02T18:32:39Z",
+      "side": 1,
+      "message": "https://google.github.io/styleguide/pyguide.html#22-imports\n\nWe technically break this in other places, but \"from x import *\" in this and other languages is usually a footgun waiting to happen...\n\n(I\u0027d prefer `import utils` and elsewhere in the file `utils.somefun(...)`)",
+      "revId": "747af826d5c5a280f62e2f7f6182c2f0e225a5b6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2efe3e13_11e8b4ef",
+        "filename": "fetch_source.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-11-02T18:32:39Z",
+      "side": 1,
+      "message": "Not going to block on this but in the future, if you run a formatter over existing code, please put it in a separate change - it makes it hard to find the parts that actually need review.",
+      "range": {
+        "startLine": 40,
+        "startChar": 0,
+        "endLine": 40,
+        "endChar": 4
+      },
+      "revId": "747af826d5c5a280f62e2f7f6182c2f0e225a5b6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
