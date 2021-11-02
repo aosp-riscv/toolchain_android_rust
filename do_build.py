@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#
 # Copyright (C) 2019 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -134,7 +135,7 @@ def main():
     # Because some patches may have touched vendored source we will rebuild
     # Cargo.lock
     subprocess.check_output(
-        [RUST_PREBUILT_PATH / 'bin' / 'cargo', 'fetch', '--offline'],
+        [CARGO_PATH, 'fetch', '--offline'],
         cwd=OUT_PATH_RUST_SOURCE, env=env)
 
     #
