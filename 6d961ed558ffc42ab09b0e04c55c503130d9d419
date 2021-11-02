@@ -20,6 +20,24 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "dfc480a5_c5e2bd2c",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-11-02T22:17:46Z",
+      "side": 1,
+      "message": "This was based on a modified LLVM toolchain script that Steve was working on in response to a partner request.  If there is a better or more reliable way to do this I\u0027d love to implement it.",
+      "parentUuid": "c183a224_94ba1fcc",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "8cbe715b_98fab384",
         "filename": "update_prebuilts.py",
         "patchSetId": 5
@@ -31,6 +49,24 @@
       "writtenOn": "2021-11-02T21:37:47Z",
       "side": 1,
       "message": "Will this potentially do the wrong thing if there\u0027s something in the cache with the wrong bid or target from a previous run?",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "09ba44fd_68abe542",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-11-02T22:17:46Z",
+      "side": 1,
+      "message": "All of the artifacts include the build ID (and target) in their name, so as long as the build IDs are unique this should be fine.  Please correct me if I\u0027ve made an incorrect assumption here.",
+      "parentUuid": "8cbe715b_98fab384",
       "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
@@ -54,6 +90,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "981ff092_a5d169e6",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-11-02T22:17:46Z",
+      "side": 1,
+      "message": "The only way I can think of to extract this automatically is by unpacking the artifact and interrogating the rustc binary.  That\u0027s not the worst thing in the world, but it seems like extra work for little benefit, especially when I think we do want to support local re-releases like you mentioned.  Thoughts?",
+      "parentUuid": "ce8960ef_b01bf959",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "a031a01e_a4d265a0",
         "filename": "update_prebuilts.py",
         "patchSetId": 5
@@ -65,6 +119,24 @@
       "writtenOn": "2021-11-02T21:37:47Z",
       "side": 1,
       "message": "Again, not in this change, but maybe this tool should also produce the commits for:\n* Updating build/soong\n* Deleting the old rustc\n* Updating STAGE0 in the rustc build.\n\nAnyone doing this step would almost always want those commits too, even if they aren\u0027t going to land them all at the same time.",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e0ee5a55_229a8913",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-11-02T22:17:46Z",
+      "side": 1,
+      "message": "The only one of those I see a problem with is the build/soong change.  The Rust toolchain manifest doesn\u0027t include build/soong so you\u0027d have to supply a path to an AOSP tree.",
+      "parentUuid": "a031a01e_a4d265a0",
       "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
