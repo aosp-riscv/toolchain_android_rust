@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#
 # Copyright (C) 2021 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,173 +16,112 @@
 
 
 import argparse
-import re
-import subprocess
 
 from paths import RUST_SOURCE_PATH
+from utils import *
 
-BRANCH_NAME: str = "rust-update-source-%s"
+BRANCH_NAME_TEMPLATE: str = "rust-update-source-%s"
 
-COMMAND_GIT_ADD:      str = "git add ."
-COMMAND_GIT_AMEND:    str = "git commit --amend --no-edit"
-COMMAND_GIT_CHECKOUT: str = "git checkout %s"
-COMMAND_GIT_COMMIT:   str = "git commit --no-verify -m 'Importing rustc-%s'"
-COMMAND_GIT_DIFF:     str = "git diff --cached --quiet"
-COMMAND_GIT_RM:       str = "git rm -fr *"
-COMMAND_GIT_TEST:     str = "git rev-parse --verify %s"
-COMMAND_FETCH:        str = "curl --proto '=https' --tlsv1.2 -f %s | tar xz --strip-components=1"
-COMMAND_REPO:         str = "repo start %s"
+COMMAND_FETCH: str = "curl --proto '=https' --tlsv1.2 -f %s | tar xz --strip-components=1"
 
-GIT_REFERENCE_BRANCH: str = 'aosp/master'
+COMMIT_MESSAGE: str = "Importing rustc-%s"
 
-RUSTC_SOURCE_URL_VERSION_TEMPLATE: str = "https://static.rust-lang.org/dist/rustc-%s-src.tar.gz"
-RUSTC_SOURCE_URL_BETA            : str = "https://static.rust-lang.org/dist/rustc-beta-src.tar.gz"
-RUSTC_SOURCE_URL_NIGHTLY         : str = "https://static.rust-lang.org/dist/rustc-nightly-src.tar.gz"
+RUST_REPO: GitRepo = GitRepo(RUST_SOURCE_PATH)
 
-VERSION_PATTERN : re.Pattern = re.compile("\d+\.\d+\.\d+")
-
-branch_existed: bool = False
-
-#
-# Command execution
-#
-
-def exec_rustc_src_command(command: str, check=False, stdout=subprocess.DEVNULL,
-                           stderr=subprocess.DEVNULL) -> subprocess.CompletedProcess:
-  return subprocess.run(command, shell=True, cwd=RUST_SOURCE_PATH, check=check,
-                        stdout=stdout, stderr=stderr)
-
-
-def handle_rustc_src_command(command: str, error_string: str, stdout=subprocess.DEVNULL,
-                             stderr=subprocess.DEVNULL) -> None:
-  result = exec_rustc_src_command(command, stdout=stdout, stderr=stderr)
-  if result.returncode != 0:
-    print("{}:\n{}".format(error_string, result.stderr))
-    exit(-2)
+RUST_SOURCE_URL_VERSION_TEMPLATE: str = "https://static.rust-lang.org/dist/rustc-%s-src.tar.gz"
+RUST_SOURCE_URL_BETA            : str = "https://static.rust-lang.org/dist/rustc-beta-src.tar.gz"
+RUST_SOURCE_URL_NIGHTLY         : str = "https://static.rust-lang.org/dist/rustc-nightly-src.tar.gz"
 
 #
 # String operations
 #
 
 def construct_archive_url(build_type: str, rust_version: str) -> str:
-  if build_type == 'nightly':
-    return RUSTC_SOURCE_URL_NIGHTLY
-  elif build_type == 'beta':
-    return RUSTC_SOURCE_URL_BETA
-  else:
-    return RUSTC_SOURCE_URL_VERSION_TEMPLATE % rust_version
+    if build_type == 'nightly':
+        return RUST_SOURCE_URL_NIGHTLY
+    elif build_type == 'beta':
+        return RUST_SOURCE_URL_BETA
+    else:
+        return RUST_SOURCE_URL_VERSION_TEMPLATE % rust_version
 
 
 def get_extra_tag(build_type: str) -> str:
-  if build_type:
-    return '-' + build_type
-  else:
-    return ''
+    if build_type:
+        return '-' + build_type
+    else:
+        return ''
 
 
-def version_string_type(arg_string: str) -> str:
-  if VERSION_PATTERN.match(arg_string):
-    return arg_string
-  else:
-    raise argparse.ArgumentTypeError("Version string is not properly formatted")
+def make_commit_message(version: str, issue: int) -> str:
+    commit_message: str = f"Importing rustc-{version}\n"
 
-#
-# Git helpers
-#
+    if issue:
+        commit_message += f"\nBug: {issue}"
 
-def git_branch_exists(branch_name: str) -> bool:
-  return exec_rustc_src_command(COMMAND_GIT_TEST % branch_name).returncode == 0
+    commit_message += "\nTest: ./build.py --lto=thin"
 
-
-def git_get_branch_target(branch_name: str) -> str:
-  return exec_rustc_src_command(COMMAND_GIT_TEST % branch_name, check=True, stdout=subprocess.PIPE).stdout.rstrip()
+    return commit_message
 
 #
 # Program logic
 #
 
 def parse_args() -> argparse.ArgumentParser:
-  parser = argparse.ArgumentParser(description='Fetch and unpack a Rust source archive')
+    parser = argparse.ArgumentParser(description='Fetch and unpack a Rust source archive')
 
-  exclusive_group = parser.add_mutually_exclusive_group()
-  exclusive_group.add_argument("-b", "--beta", dest="build_type", action="store_const",
-    default='', const='beta', help="fetch the beta archive")
-  exclusive_group.add_argument("-n", "--nightly", dest="build_type", action="store_const",
-    default='', const='nightly', help="fetch the nightly archive")
-  parser.add_argument("-o", "--overwrite", dest="overwrite", action="store_true",
-    help="Overwrite an existing branch if it exists")
+    exclusive_group = parser.add_mutually_exclusive_group()
+    exclusive_group.add_argument(
+        "-b", "--beta", dest="build_type", action="store_const",
+        default='', const='beta', help="fetch the beta archive")
+    exclusive_group.add_argument(
+        "-n", "--nightly", dest="build_type", action="store_const",
+        default='', const='nightly', help="fetch the nightly archive")
+    parser.add_argument(
+        "--branch", metavar="NAME", dest="branch",
+        help="Branch name to use for this prebuilt update")
+    parser.add_argument(
+        "-i", "--issue", "--bug", metavar="NUMBER", dest="issue",
+        help="Issue number to include in commit message")
+    parser.add_argument(
+        "-o", "--overwrite", dest="overwrite", action="store_true",
+        help="Overwrite the target branch if it exists")
 
-  parser.add_argument("rust_version", action="store", type=version_string_type)
+    parser.add_argument("rust_version", action="store", type=version_string_type)
 
-  return parser.parse_args()
-
-
-def setup_git_branch(branch_name: str, overwrite: bool) -> None:
-  print('')
-  if git_branch_exists(branch_name):
-    global branch_existed
-    branch_existed = True
-
-    if overwrite:
-      print("Checking out branch %s" % branch_name)
-      handle_rustc_src_command(COMMAND_GIT_CHECKOUT % branch_name,
-                             "Error checking out branch to overwrite")
-    else:
-      print("Branch %s already exists and the 'overwrite' option was not set" % branch_name)
-      exit(-1)
-
-  else:
-    print("Creating branch %s" % branch_name)
-    command_repo = COMMAND_REPO % branch_name
-    handle_rustc_src_command(command_repo, "Error creating repo for source update")
+    return parser.parse_args()
 
 
 def clean_repository() -> None:
-  print("Deleting old files")
-  handle_rustc_src_command(COMMAND_GIT_RM, "Error deleting old files from git")
+    print("Deleting old files")
+    RUST_REPO.rm('*')
 
 
-def fetch_archive(build_type: str, rust_version: str) -> None:
-  archive_url = construct_archive_url(build_type, rust_version)
-  print("Fetching archive %s\n" % archive_url)
-  handle_rustc_src_command(
-    COMMAND_FETCH % archive_url,
-    "Error fetching source for Rust version %s" % rust_version,
-    stdout=None,
-    stderr=None)
-
-
-def commit_files(branch_name: str, rustc_version: str) -> None:
-  global branch_existed
-
-  print()
-  handle_rustc_src_command(COMMAND_GIT_ADD, "Error adding new files to git")
-
-  if exec_rustc_src_command(COMMAND_GIT_DIFF).returncode == 0:
-    print("No update to source")
-    exit(0)
-  elif branch_existed and (git_get_branch_target(branch_name) != git_get_branch_target(GIT_REFERENCE_BRANCH)):
-    print("Amending previous commit")
-    handle_rustc_src_command(COMMAND_GIT_AMEND,
-                             "Error amending previous commit")
-  else:
-    print("Commiting new files")
-    handle_rustc_src_command(COMMAND_GIT_COMMIT % rustc_version,
-                             "Error committing new files to git")
+def fetch_and_extract_archive(build_type: str, rust_version: str) -> None:
+    archive_url = construct_archive_url(build_type, rust_version)
+    print("Fetching archive %s\n" % archive_url)
+    handle_command(
+        COMMAND_FETCH % archive_url,
+        "Error fetching source for Rust version %s" % rust_version,
+        cwd=RUST_SOURCE_PATH)
+    # Add newline padding to the output
+    print()
+    RUST_REPO.add('.')
 
 
 def main() -> None:
-  args         = parse_args()
-  rust_version = args.rust_version + get_extra_tag(args.build_type)
-  branch_name  = BRANCH_NAME % rust_version
+    args              = parse_args()
+    rust_version: str = args.rust_version + get_extra_tag(args.build_type)
+    branch_name:  str = args.branch or (BRANCH_NAME_TEMPLATE % rust_version)
 
-  setup_git_branch(branch_name, args.overwrite)
-  clean_repository()
-  fetch_archive(args.build_type, rust_version)
-  commit_files(branch_name, rust_version)
+    print('')
+    RUST_REPO.create_or_checkout(branch_name, args.overwrite)
+    clean_repository()
+    fetch_and_extract_archive(args.build_type, rust_version)
+    RUST_REPO.amend_or_commit(make_commit_message(rust_version, args.issue))
+    print("Done")
 
-  exit(0)
+    exit(0)
 
 
 if __name__ == '__main__':
-  main()
+    main()
