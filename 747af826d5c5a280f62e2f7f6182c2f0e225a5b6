@@ -39,6 +39,30 @@
       },
       "revId": "747af826d5c5a280f62e2f7f6182c2f0e225a5b6",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "935bb12e_ead9a646",
+        "filename": "fetch_source.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-11-02T20:53:21Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "2efe3e13_11e8b4ef",
+      "range": {
+        "startLine": 40,
+        "startChar": 0,
+        "endLine": 40,
+        "endChar": 4
+      },
+      "revId": "747af826d5c5a280f62e2f7f6182c2f0e225a5b6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
