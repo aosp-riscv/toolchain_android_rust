@@ -18,6 +18,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c087028e_e7dba4b4",
+        "filename": "fetch_source.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-11-02T21:06:57Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ae49d6d2_d4b2eef6",
+      "revId": "747af826d5c5a280f62e2f7f6182c2f0e225a5b6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "2efe3e13_11e8b4ef",
