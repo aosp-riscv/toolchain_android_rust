@@ -73,6 +73,24 @@
     {
       "unresolved": false,
       "key": {
+        "uuid": "628af610_7a1eefd3",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-11-02T23:09:13Z",
+      "side": 1,
+      "message": "I think that\u0027s correct for current uses now that I\u0027ve reviewed it. It\u0027s a little brittle because:\n\n* Technically `build_server_name` need not include the bid, it just happens to.\n* Even if `build_server_name` is always unique, `host_name` could easily not be.\n\nAgain, in all your cases you\u0027ve used it safely so I\u0027m closing this, but this could be easy to mess up as the codebase evolves.",
+      "parentUuid": "09ba44fd_68abe542",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
         "uuid": "ce8960ef_b01bf959",
         "filename": "update_prebuilts.py",
         "patchSetId": 5
