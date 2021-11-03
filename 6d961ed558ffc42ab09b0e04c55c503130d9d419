@@ -3,6 +3,57 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "8d567038_4af9f158",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "3.9+ doesn\u0027t need Tuple (just use `tuple`). 3.10+ doesn\u0027t need Union (can use |), but I don\u0027t think the platform is there yet...",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "338c1ffd_eb07f1c0",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "Style nit that you can ignore since idk what you\u0027re following here: Python generally discourages wildcard imports (https://www.python.org/dev/peps/pep-0008/#imports)",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "145e0f2d_b02ee193",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "mypy is smart enough to do type deduction for almost anything, fwiw. It can be configured to yell when it _can\u0027t_ deduce a type for you (by default anything not deduced is assumed to be Any). mypy has a --strict, but you can also add a mypy.ini to configure the defaults. Thanks for the kick to finally get around to cranking up the checks in the NDK, here\u0027s an example: https://android-review.googlesource.com/c/platform/ndk/+/1878938",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "c183a224_94ba1fcc",
         "filename": "update_prebuilts.py",
         "patchSetId": 5
@@ -32,6 +83,115 @@
       "side": 1,
       "message": "This was based on a modified LLVM toolchain script that Steve was working on in response to a partner request.  If there is a better or more reliable way to do this I\u0027d love to implement it.",
       "parentUuid": "c183a224_94ba1fcc",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f4f87655_0206f18f",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "This variable is unused anyway.",
+      "parentUuid": "dfc480a5_c5e2bd2c",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7cdb14a4_fb9f6682",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "This appears to be optional, so you want `Optional[int]`.",
+      "range": {
+        "startLine": 70,
+        "startChar": 72,
+        "endLine": 70,
+        "endChar": 82
+      },
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "650ec722_9aa2f5ca",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "Not that we\u0027re going to have an issue #0... but I learned the hard way that `if issue is not None` is better (I caused a droidfood outage by doing this in the OTA)",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "7a4dfee6_f57f6ece",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "`commit_message +\u003d f\"\\nBug: https://issuetracker.google.com/issues/{issue}\"` so it\u0027s hyperlinked in places other than just gerrit.\n\nAlternatively, make it a str and just let the user put the URL in themselves (with auto-URLization of plain ints, probably). You may want to refer to upstream rust bugs here and those are on github, not buganizer.",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1eca3bcf_2cc2cf7f",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "There\u0027s no reason for this to be a class. In fact I think you tricked yourself into accidentally not using it, because it\u0027s never invoked, only constructed.",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9d5dc00a_1ef0cf50",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "Unused.",
       "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
@@ -84,6 +244,24 @@
       "writtenOn": "2021-11-02T23:09:13Z",
       "side": 1,
       "message": "I think that\u0027s correct for current uses now that I\u0027ve reviewed it. It\u0027s a little brittle because:\n\n* Technically `build_server_name` need not include the bid, it just happens to.\n* Even if `build_server_name` is always unique, `host_name` could easily not be.\n\nAgain, in all your cases you\u0027ve used it safely so I\u0027m closing this, but this could be easy to mess up as the codebase evolves.",
+      "parentUuid": "09ba44fd_68abe542",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d2ebfee0_0bf0132b",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "Should be fine, and if for some reason it isn\u0027t at least there\u0027s UI feedback to show that the cache is used.",
       "parentUuid": "09ba44fd_68abe542",
       "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
@@ -142,6 +320,166 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": true,
+      "key": {
+        "uuid": "b1022cd6_7e7663ec",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "This is implicit, btw.",
+      "range": {
+        "startLine": 136,
+        "startChar": 42,
+        "endLine": 136,
+        "endChar": 55
+      },
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0f78d968_0c70822e",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "Return types this complex are worthy of a docstring or a type alias.",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3f28e025_0bb3a06f",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "Just `tuple`. No need to import any of the common types from typing as of 3.9.",
+      "range": {
+        "startLine": 148,
+        "startChar": 58,
+        "endLine": 148,
+        "endChar": 63
+      },
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e0590cf3_ad62ca78",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "`sys.exit` accepts a string. `sys.exit(f\"Provided prebuilt archive does not exist: {ident.as_posix()}\")` is the typical way to write this unless the exact error code is important.\n\nAnd actually, I think everywhere you\u0027ve done this you\u0027ll be better served by `raise RuntimeError(...)`. `sys.exit` does the practically same thing with less context for the user.",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b3f18336_b91b13f8",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 166,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "Stray?",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "86016e56_5b92090e",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 194,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "str",
+      "range": {
+        "startLine": 194,
+        "startChar": 63,
+        "endLine": 194,
+        "endChar": 67
+      },
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "976e3be9_2cb620d5",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 198,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "search? match is a footgun so even when I want it I usually use search and add the ^\n\nhttps://docs.python.org/3/library/re.html#search-vs-match",
+      "range": {
+        "startLine": 198,
+        "startChar": 49,
+        "endLine": 198,
+        "endChar": 54
+      },
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4b81df86_2bec753a",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 244,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "Typically no need to `re.compile` something used locally. The stdlib automatically precompiles and caches them internally: https://stackoverflow.com/a/452143/632035",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": false,
       "key": {
         "uuid": "a031a01e_a4d265a0",
@@ -191,6 +529,138 @@
       "side": 1,
       "message": "If we did this, we could map build/soong into the Rust toolchain manifest just for this. There should be a regex for which projects trigger a rebuild, so we could just not include build/soong in that list.",
       "parentUuid": "e0ee5a55_229a8913",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0e34992b_09e876ff",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 276,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "Could you alternatively put this script in development/scripts and run it there? idk how this gets used so maybe that\u0027s an awful idea.",
+      "parentUuid": "e0ee5a55_229a8913",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4ac971e4_7d6c76fa",
+        "filename": "utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "O_O\n\nWhy?",
+      "range": {
+        "startLine": 27,
+        "startChar": 42,
+        "endLine": 27,
+        "endChar": 57
+      },
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4bdab60c_f4eec8b7",
+        "filename": "utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "`|` is dict.update, right? I think the defaults here will override anything the caller passes.",
+      "range": {
+        "startLine": 52,
+        "startChar": 46,
+        "endLine": 52,
+        "endChar": 80
+      },
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "22ddfd25_8f6e3781",
+        "filename": "utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "IME these are super annoying to debug when the command that failed isn\u0027t included in the error message.",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a3f7b022_443ae0dc",
+        "filename": "utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "The fact that these are implicitly fatal on failure was not clear when I was reading all the callsites in the previous file. I\u0027d recommend appending renaming the set `handle_command_or_die` or `handle_command_require_success` or something like that to be clear, or alternatively just don\u0027t do this and have the caller call them with `check\u003dTrue`.",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fcabacc7_47fe8841",
+        "filename": "utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "Better is to just not use shell\u003dTrue.",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e163f1f4_52c278ef",
+        "filename": "utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "`Path.write_text()` is basically this.",
       "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }

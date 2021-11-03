@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fe1cf3a0_64129db6",
+        "filename": "paths.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-03T01:46:30Z",
+      "side": 1,
+      "message": "FYI this doesn\u0027t work off corp. If that\u0027s something you want to support, here\u0027s how rprichard fixed our scripts: https://android-review.googlesource.com/c/platform/prebuilts/ndk/+/1743351/1/update_platform.py",
+      "revId": "eeb0688231422d0a6dccf6432088385f25c5b621",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
