@@ -16,6 +16,24 @@
       "message": "FYI this doesn\u0027t work off corp. If that\u0027s something you want to support, here\u0027s how rprichard fixed our scripts: https://android-review.googlesource.com/c/platform/prebuilts/ndk/+/1743351/1/update_platform.py",
       "revId": "eeb0688231422d0a6dccf6432088385f25c5b621",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1ee2e28f_93b0e0cd",
+        "filename": "paths.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-11-04T00:01:48Z",
+      "side": 1,
+      "message": "It looks like that directory isn\u0027t in the PATH variable by default for gLinux workstations.  I\u0027ll look into fixing this but if I can\u0027t find something obvious I may leave it for a followup.",
+      "parentUuid": "fe1cf3a0_64129db6",
+      "revId": "eeb0688231422d0a6dccf6432088385f25c5b621",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
