@@ -22,17 +22,17 @@ import shlex
 import shutil
 import sys
 import subprocess
-from typing import TextIO
+from typing import Any, TextIO, Union
 
 
-GIT_REFERENCE_BRANCH: str = 'aosp/master'
+GIT_REFERENCE_BRANCH = "aosp/master"
 
-SUBPROCESS_RUN_QUIET_DEFAULTS: dict[str, str] = {
+SUBPROCESS_RUN_QUIET_DEFAULTS: dict[str, object] = {
     'stdout': subprocess.DEVNULL,
     'stderr': subprocess.DEVNULL,
 }
 
-VERSION_PATTERN : re.Pattern = re.compile("\d+\.\d+\.\d+")
+VERSION_PATTERN = re.compile("\d+\.\d+\.\d+")
 
 #
 # Type Functions
@@ -60,7 +60,7 @@ def prepare_command(command: str) -> list[str]:
     return command_list
 
 
-def run_and_exit_on_failure(command: str, error_message: str, *args, **kwargs) -> subprocess.CompletedProcess:
+def run_and_exit_on_failure(command: str, error_message: str, *args: Any, **kwargs: Any) -> subprocess.CompletedProcess[str]:
     """Runs a command where failure is a valid outcome"""
     result = subprocess.run(prepare_command(command), *args, **kwargs)
     if result.returncode != 0:
@@ -69,12 +69,12 @@ def run_and_exit_on_failure(command: str, error_message: str, *args, **kwargs) -
     return result
 
 
-def run_quiet_and_exit_on_failure(command: str, error_message: str, *args, **kwargs) -> int:
+def run_quiet_and_exit_on_failure(command: str, error_message: str, *args: Any, **kwargs: Any) -> int:
     """Runs a failable command with stdout and stderr directed to /dev/null"""
     return run_and_exit_on_failure(command, error_message, *args, **(kwargs | SUBPROCESS_RUN_QUIET_DEFAULTS)).returncode
 
 
-def run_quiet(command: str, *args, **kwargs) -> int:
+def run_quiet(command: str, *args: Any, **kwargs: Any) -> int:
     return subprocess.run(prepare_command(command), *args, **(kwargs | SUBPROCESS_RUN_QUIET_DEFAULTS)).returncode
 
 #
@@ -87,7 +87,7 @@ class GitRepo:
     def __init__(self, repo_path: Path) -> None:
         self.path = repo_path
 
-    def add(self, pattern: str='.') -> None:
+    def add(self, pattern: Union[str, Path]='.') -> None:
         run_quiet_and_exit_on_failure(
             f"git add {pattern}",
             "Failed to add files matching pattern '%s' to Git repo %s" %
@@ -164,7 +164,7 @@ class GitRepo:
             exit(-1)
 
 
-    def rm(self, pattern: str) -> None:
+    def rm(self, pattern: Union[str, Path]) -> None:
         run_quiet_and_exit_on_failure(
             f"git rm -fr {pattern}",
             "Failed to remove files matching pattern '%s' from Git repo %s" %

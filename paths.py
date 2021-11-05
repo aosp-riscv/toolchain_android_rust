@@ -13,7 +13,9 @@
 # limitations under the License.
 """Provides path expansion to components needed for the rustc build."""
 
+import os
 from pathlib import Path
+
 import build_platform
 
 RUST_VERSION_STAGE0: str = '1.55.0'
@@ -24,6 +26,12 @@ GLIBC_VERSION:       str = '2.17-4.8'
 TOOLCHAIN_PATH:   Path = Path(__file__).parent.resolve()
 WORKSPACE_PATH:   Path = (TOOLCHAIN_PATH / '..' / '..').resolve()
 RUST_SOURCE_PATH: Path = (TOOLCHAIN_PATH / '..' / 'rustc').resolve()
+
+# We take DIST_DIR through an environment variable rather than an
+# argument to match the interface for traditional Android builds.
+DIST_PATH: Path = (
+    Path(os.environ["DIST_DIR"]).resolve() if "DIST_DIR" in os.environ else
+    (WORKSPACE_PATH / "dist"))
 
 PATCHES_PATH:   Path = TOOLCHAIN_PATH / 'patches'
 TEMPLATES_PATH: Path = TOOLCHAIN_PATH / 'templates'

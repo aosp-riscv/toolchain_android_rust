@@ -22,9 +22,9 @@ import shutil
 import subprocess
 import sys
 
-import hosts
+import build_platform
 
-def apply_patches(code_dir: Path, patch_dir: Path, no_patch_abort=False):
+def apply_patches(code_dir: Path, patch_dir: Path, no_patch_abort: bool = False) -> None:
     patch_list    = sorted(patch_dir.glob('rustc-*'))
     count_padding = len(str(len(patch_list)))
 
@@ -54,7 +54,7 @@ def apply_patches(code_dir: Path, patch_dir: Path, no_patch_abort=False):
     print()
 
 
-def setup_files(input_dir: Path, output_dir: Path, patches_dir: Path, no_patch_abort=False):
+def setup_files(input_dir: Path, output_dir: Path, patches_dir: Path, no_patch_abort: bool = False) -> None:
     """Copy source and apply patches in a performant and fault-tolerant manner.
 
     This function creates a copy-on-write mirror of the source directory and
@@ -70,7 +70,7 @@ def setup_files(input_dir: Path, output_dir: Path, patches_dir: Path, no_patch_a
 
     # Create parent of tmp_source_dir if necessary - so we can call 'cp' below.
     if not tmp_output_dir.parent.exists():
-        tmp_output_dir.parent().mkdir(parents=True)
+        tmp_output_dir.parent.mkdir(parents=True)
 
     print('Creating copy of Rust source')
 
@@ -80,7 +80,7 @@ def setup_files(input_dir: Path, output_dir: Path, patches_dir: Path, no_patch_a
     # get a newer timestamp than files in $source_dir.
     #
     # Note: Darwin builds don't copy symlinks with -r.  Use -R instead.
-    reflink = '--reflink=auto' if hosts.build_host().is_linux else '-c'
+    reflink = '--reflink=auto' if build_platform.is_linux() else '-c'
     try:
       cmd = ['cp', '-Rf', reflink, input_dir, tmp_output_dir]
       subprocess.check_call(cmd)

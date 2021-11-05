@@ -66,7 +66,7 @@ def make_commit_message(version: str, issue: int) -> str:
 # Program logic
 #
 
-def parse_args() -> argparse.ArgumentParser:
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description='Fetch and unpack a Rust source archive')
 
     exclusive_group = parser.add_mutually_exclusive_group()

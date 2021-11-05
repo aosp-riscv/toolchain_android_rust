@@ -33,7 +33,6 @@ from paths import (
 )
 from utils import (
     GitRepo,
-    quiet_command,
     replace_file_contents,
     run_and_exit_on_failure,
     run_quiet,
@@ -56,7 +55,7 @@ BUILD_SERVER_TARGET_MAP: dict[str, str] = {
 HOST_ARCHIVE_PATTERN: str = "rust-%s-%s.tar.gz"
 HOST_TARGET_DEFAULT:  str = "linux-x86"
 
-RLIB_NAME_PATTERN: re.Pattern = re.compile("libstd-([a-zA-z\d]+)\.rlib")
+RLIB_NAME_PATTERN: re.Pattern[str] = re.compile("libstd-([a-zA-z\d]+)\.rlib")
 
 RUST_PREBUILT_REPO: GitRepo = GitRepo(RUST_PREBUILT_PATH)
 
@@ -103,7 +102,9 @@ def ensure_gcert_valid() -> None:
         run_and_exit_on_failure("gcert", "Failed to obtain authentication credentials")
 
 
-def fetch_build_server_artifact(target: str, build_id: int, build_server_name: str, host_name: str = None) -> Path:
+def fetch_build_server_artifact(target: str, build_id: int, build_server_name: str,
+    host_name: Optional[str] = None) -> Path:
+
     host_name = host_name or build_server_name
     DOWNLOADS_PATH.mkdir(exist_ok=True)
     dest: Path = DOWNLOADS_PATH / host_name
@@ -125,7 +126,7 @@ def fetch_build_server_artifact(target: str, build_id: int, build_server_name: s
 # Program logic
 #
 
-def parse_args() -> argparse.ArgumentParser:
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=inspect.getdoc(sys.modules[__name__]))
 
     parser.add_argument(
@@ -148,7 +149,7 @@ def parse_args() -> argparse.ArgumentParser:
     return parser.parse_args()
 
 
-def prepare_prebuilt_artifact(ident: Union[int, Path]) -> tuple[dict[str, Path], Path]:
+def prepare_prebuilt_artifact(ident: Union[int, Path]) -> tuple[dict[str, Path], Optional[Path]]:
     """
     Returns a dictionary that maps target names to prebuilt artifact paths.  If
     the artifacts were downloaded from a build server the manifest for the
@@ -163,9 +164,9 @@ def prepare_prebuilt_artifact(ident: Union[int, Path]) -> tuple[dict[str, Path],
     else:
         artifact_path_map: dict[str, Path] = {}
 
-        manifest_name:      str = f"manifest_{ident}.xml"
-        bs_archive_name:    str = BUILD_SERVER_ARCHIVE_PATTERN % ident
-        host_manifest_path: str = fetch_build_server_artifact(BUILD_SERVER_TARGET_DEFAULT, ident, manifest_name)
+        manifest_name:       str = f"manifest_{ident}.xml"
+        bs_archive_name:     str = BUILD_SERVER_ARCHIVE_PATTERN % ident
+        host_manifest_path: Path = fetch_build_server_artifact(BUILD_SERVER_TARGET_DEFAULT, ident, manifest_name)
 
         for target, bs_target in BUILD_SERVER_TARGET_MAP.items():
             artifact_path_map[target] = fetch_build_server_artifact(
@@ -176,7 +177,9 @@ def prepare_prebuilt_artifact(ident: Union[int, Path]) -> tuple[dict[str, Path],
         return (artifact_path_map, host_manifest_path)
 
 
-def unpack_prebuilt_artifacts(artifact_path_map: dict[str, Path], manifest_path: Path, version: str, overwrite: bool) -> None:
+def unpack_prebuilt_artifacts(artifact_path_map: dict[str, Path], manifest_path: Optional[Path],
+    version: str, overwrite: bool) -> None:
+
     """
     Use the provided target-to-artifact path map to extract the provided
     archives into the appropriate directories.  If a manifest is present it
@@ -215,7 +218,7 @@ def get_rlib_suffix(platform: str, version: str, arch: str) -> str:
     libdir_path: Path = RUST_PREBUILT_PATH / platform / version / "lib" / "rustlib" / arch / "lib"
 
     for lib_path in libdir_path.iterdir():
-        match_data: re.Match = RLIB_NAME_PATTERN.search(lib_path.name)
+        match_data = RLIB_NAME_PATTERN.search(lib_path.name)
         if match_data:
             return match_data.group(1)
 
@@ -280,7 +283,7 @@ def update_platform_build_files(version: str, is_local: bool) -> None:
 
             # Update library suffixes
             for arch, new_suffix in arch_suffixes.items():
-                match_data: re.Match = re.search(f"{arch}\/lib\/{RLIB_NAME_PATTERN.pattern}", file_contents)
+                match_data = re.search(f"{arch}\/lib\/{RLIB_NAME_PATTERN.pattern}", file_contents)
 
                 if match_data:
                     file_contents = re.sub(match_data.group(1), new_suffix, file_contents)
@@ -300,7 +303,7 @@ def update_build_files(version: str, is_local: bool) -> None:
     update_platform_build_files(version, is_local)
 
 
-def main():
+def main() -> None:
     args = parse_args()
     branch_name: str = args.branch or make_branch_name(args.version, isinstance(args.prebuilt_ident, Path))
 

@@ -15,53 +15,55 @@
 
 import argparse
 import os
+from pathlib import Path
 import subprocess
 import stat
 from string import Template
+from typing import Any
 
 import build_platform
 from paths import *
 
 
 HOST_TARGETS: list[str] = [build_platform.triple()] + build_platform.alt_triples()
-DEVICE_TARGETS: list[str] = ['aarch64-linux-android', 'armv7-linux-androideabi',
-                  'x86_64-linux-android', 'i686-linux-android']
+DEVICE_TARGETS: list[str] = ["aarch64-linux-android", "armv7-linux-androideabi",
+                  "x86_64-linux-android", "i686-linux-android"]
 
 ALL_TARGETS: list[str] = HOST_TARGETS + DEVICE_TARGETS
 
-LTO_DENYLIST_TARGETS: list[str] = ['armv7-linux-androideabi']
+LTO_DENYLIST_TARGETS: list[str] = ["armv7-linux-androideabi"]
 
-ANDROID_TARGET_VERSION: str = '31'
+ANDROID_TARGET_VERSION: str = "31"
 
-CONFIG_TOML_TEMPLATE:           Path = TEMPLATES_PATH / 'config.toml.template'
-DEVICE_CC_WRAPPER_TEMPLATE:     Path = TEMPLATES_PATH / 'device_cc_wrapper.template'
-DEVICE_LINKER_WRAPPER_TEMPLATE: Path = TEMPLATES_PATH / 'device_linker_wrapper.template'
-DEVICE_TARGET_TEMPLATE:         Path = TEMPLATES_PATH / 'device_target.template'
-HOST_CC_WRAPPER_TEMPLATE:       Path = TEMPLATES_PATH / 'host_cc_wrapper.template'
-HOST_CXX_WRAPPER_TEMPLATE:      Path = TEMPLATES_PATH / 'host_cxx_wrapper.template'
-HOST_LINKER_WRAPPER_TEMPLATE:   Path = TEMPLATES_PATH / 'host_linker_wrapper.template'
-HOST_TARGET_TEMPLATE:           Path = TEMPLATES_PATH / 'host_target.template'
+CONFIG_TOML_TEMPLATE:           Path = TEMPLATES_PATH / "config.toml.template"
+DEVICE_CC_WRAPPER_TEMPLATE:     Path = TEMPLATES_PATH / "device_cc_wrapper.template"
+DEVICE_LINKER_WRAPPER_TEMPLATE: Path = TEMPLATES_PATH / "device_linker_wrapper.template"
+DEVICE_TARGET_TEMPLATE:         Path = TEMPLATES_PATH / "device_target.template"
+HOST_CC_WRAPPER_TEMPLATE:       Path = TEMPLATES_PATH / "host_cc_wrapper.template"
+HOST_CXX_WRAPPER_TEMPLATE:      Path = TEMPLATES_PATH / "host_cxx_wrapper.template"
+HOST_LINKER_WRAPPER_TEMPLATE:   Path = TEMPLATES_PATH / "host_linker_wrapper.template"
+HOST_TARGET_TEMPLATE:           Path = TEMPLATES_PATH / "host_target.template"
 
-LINKER_PIC_FLAG:     str = '-Wl,-mllvm,-relocation-model=pic'
-MACOSX_VERSION_FLAG: str = '-mmacosx-version-min=10.14'
+LINKER_PIC_FLAG:     str = "-Wl,-mllvm,-relocation-model=pic"
+MACOSX_VERSION_FLAG: str = "-mmacosx-version-min=10.14"
 
 
-def instantiate_template_exec(template_path: Path, output_path: Path, **kwargs):
+def instantiate_template_exec(template_path: Path, output_path: Path, **kwargs: Any) -> None:
     instantiate_template_file(template_path, output_path, make_exec=True, **kwargs)
 
-def instantiate_template_file(template_path: Path, output_path: Path, make_exec: bool = False, **kwargs) -> None:
+def instantiate_template_file(template_path: Path, output_path: Path, make_exec: bool = False, **kwargs: Any) -> None:
     with open(template_path) as template_file:
         template = Template(template_file.read())
-        with open(output_path, 'w') as output_file:
+        with open(output_path, "w") as output_file:
             output_file.write(template.substitute(**kwargs))
     if make_exec:
         output_path.chmod(output_path.stat().st_mode | stat.S_IEXEC)
 
 
 def host_config(target: str, macosx_flags: str, linker_flags: str) -> str:
-    cc_wrapper_name     = OUT_PATH_WRAPPERS / ('clang-%s' % target)
-    cxx_wrapper_name    = OUT_PATH_WRAPPERS / ('clang++-%s' % target)
-    linker_wrapper_name = OUT_PATH_WRAPPERS / ('linker-%s' % target)
+    cc_wrapper_name     = OUT_PATH_WRAPPERS / f"clang-{target}"
+    cxx_wrapper_name    = OUT_PATH_WRAPPERS / f"clang++-{target}"
+    linker_wrapper_name = OUT_PATH_WRAPPERS / f"linker-{target}"
 
     instantiate_template_exec(
         HOST_CC_WRAPPER_TEMPLATE,
@@ -86,7 +88,7 @@ def host_config(target: str, macosx_flags: str, linker_flags: str) -> str:
         macosx_flags=macosx_flags,
         linker_flags=linker_flags)
 
-    with open(HOST_TARGET_TEMPLATE, 'r') as template_file:
+    with open(HOST_TARGET_TEMPLATE, "r") as template_file:
         return Template(template_file.read()).substitute(
             target=target,
             cc=cc_wrapper_name,
@@ -97,13 +99,13 @@ def host_config(target: str, macosx_flags: str, linker_flags: str) -> str:
 
 
 def device_config(target: str, lto_flag: str, linker_flags: str) -> str:
-    cc_wrapper_name     = OUT_PATH_WRAPPERS / ('clang-%s' % target)
-    linker_wrapper_name = OUT_PATH_WRAPPERS / ('linker-%s' % target)
+    cc_wrapper_name     = OUT_PATH_WRAPPERS / f"clang-{target}"
+    linker_wrapper_name = OUT_PATH_WRAPPERS / f"linker-{target}"
 
     clang_target = target + ANDROID_TARGET_VERSION
 
     if target in LTO_DENYLIST_TARGETS:
-        lto_flag = ''
+        lto_flag = ""
 
     instantiate_template_exec(
         DEVICE_CC_WRAPPER_TEMPLATE,
@@ -122,7 +124,7 @@ def device_config(target: str, lto_flag: str, linker_flags: str) -> str:
         linker_flags=linker_flags,
         lto_flag=lto_flag)
 
-    with open(DEVICE_TARGET_TEMPLATE, 'r') as template_file:
+    with open(DEVICE_TARGET_TEMPLATE, "r") as template_file:
         return Template(template_file.read()).substitute(
             target=target,
             cc=cc_wrapper_name,
@@ -130,17 +132,17 @@ def device_config(target: str, lto_flag: str, linker_flags: str) -> str:
             ar=AR_PATH)
 
 
-def configure(args: argparse.ArgumentParser, env: dict[str, str]):
+def configure(args: argparse.Namespace, env: dict[str, str]) -> None:
     """Generates config.toml and compiler wrapers for the rustc build."""
 
     #
     # Compute compiler/linker flags
     #
 
-    macosx_flags:       str = ''
-    lto_flag:           str = f"-flto={args.lto}" if args.lto != 'none' else ''
-    host_ld_selector:   str = '-fuse-ld=lld' if build_platform.is_linux() else ''
-    host_bin_search:    str = ('-B' + GCC_TOOLCHAIN_PATH.as_posix()) if build_platform.is_linux() else ''
+    macosx_flags:       str = ""
+    lto_flag:           str = f"-flto={args.lto}" if args.lto != "none" else ""
+    host_ld_selector:   str = "-fuse-ld=lld" if build_platform.is_linux() else ""
+    host_bin_search:    str = ("-B" + GCC_TOOLCHAIN_PATH.as_posix()) if build_platform.is_linux() else ""
     host_llvm_libpath:  str = f"-L{LLVM_CXX_RUNTIME_PATH.as_posix()}"
     host_rpath_runtime: str = f"-Wl,-rpath,{build_platform.rpath_origin()}/../lib64"
 
@@ -149,12 +151,12 @@ def configure(args: argparse.ArgumentParser, env: dict[str, str]):
         # to go hunt for it on OSX
         # On pre-Mojave, this command will output the empty string.
         output = subprocess.check_output(
-            ['xcrun', '--sdk', 'macosx', '--show-sdk-path'])
+            ["xcrun", "--sdk", "macosx", "--show-sdk-path"])
         macosx_flags = (
             MACOSX_VERSION_FLAG +
-            " --sysroot " + output.rstrip().decode('utf-8'))
+            " --sysroot " + output.rstrip().decode("utf-8"))
 
-    host_linker_flags = ' '.join([
+    host_linker_flags = " ".join([
         host_ld_selector,
         LINKER_PIC_FLAG,
         lto_flag,
@@ -173,34 +175,34 @@ def configure(args: argparse.ArgumentParser, env: dict[str, str]):
     # Update environment variables
     #
 
-    env['PATH'] = os.pathsep.join(
+    env["PATH"] = os.pathsep.join(
         [p.as_posix() for p in [
-          RUST_HOST_STAGE0_PATH / 'bin',
-          CMAKE_PREBUILT_PATH / 'bin',
+          RUST_HOST_STAGE0_PATH / "bin",
+          CMAKE_PREBUILT_PATH / "bin",
           NINJA_PREBUILT_PATH,
           BUILD_TOOLS_PREBUILT_PATH,
-        ]] + [env['PATH']])
+        ]] + [env["PATH"]])
 
     # Only adjust the library path on Linux - on OSX, use the devtools curl
     if build_platform.is_linux():
-        if 'LIBRARY_PATH' in env:
-            old_library_path = ':{0}'.format(env['LIBRARY_PATH'])
+        if "LIBRARY_PATH" in env:
+            old_library_path = f":{env['LIBRARY_PATH']}"
         else:
-            old_library_path = ''
-        env['LIBRARY_PATH'] = '{0}{1}'.format(CURL_PREBUILT_PATH / 'lib', old_library_path)
+            old_library_path = ""
+        env["LIBRARY_PATH"] = f"{CURL_PREBUILT_PATH / 'lib'}{old_library_path}"
 
     # Use LD_LIBRARY_PATH to tell the build system where to find libc++.so.1
     # without polluting the rpath of the produced artifacts.
-    env['LD_LIBRARY_PATH'] = LLVM_CXX_RUNTIME_PATH.as_posix()
+    env["LD_LIBRARY_PATH"] = LLVM_CXX_RUNTIME_PATH.as_posix()
 
     # Tell the rust bootstrap system where to place its final products
-    env['DESTDIR'] = OUT_PATH_PACKAGE
+    env["DESTDIR"] = OUT_PATH_PACKAGE.as_posix()
 
     # Pass additional flags to the Rust compiler
-    env['RUSTFLAGS'] = '-C relocation-model=pic'
+    env["RUSTFLAGS"] = "-C relocation-model=pic"
 
-    if args.lto != 'none':
-        env['RUSTFLAGS'] += ' -C linker-plugin-lto'
+    if args.lto != "none":
+        env["RUSTFLAGS"] += " -C linker-plugin-lto"
 
     # The LTO flag must be passed via the HOST_CFLAGS environment variable due
     # to the fact that including it in the host c/cxx wrappers will cause the
@@ -230,23 +232,23 @@ def configure(args: argparse.ArgumentParser, env: dict[str, str]):
     # Note: The Rust bootstrap system will copy HOST_CFLAGS into CFLAGS when
     #       invoking the LLVM build system.  As a result the LTO argument will
     #       appear twice in the CMake language flag variables.
-    env['HOST_CFLAGS'] = lto_flag
+    env["HOST_CFLAGS"] = lto_flag
 
     #
     # Intantiate wrappers
     #
 
-    host_configs = '\n'.join(
+    host_configs = "\n".join(
         [host_config(target, macosx_flags, host_linker_flags_escaped) for target in HOST_TARGETS])
-    device_configs = '\n'.join(
+    device_configs = "\n".join(
         [device_config(target, lto_flag, device_linker_flags) for target in DEVICE_TARGETS])
 
-    all_targets = '[' + ','.join(
+    all_targets = "[" + ",".join(
         ['"' + target + '"' for target in ALL_TARGETS]) + ']'
 
     instantiate_template_file(
         CONFIG_TOML_TEMPLATE,
-        OUT_PATH_RUST_SOURCE / 'config.toml',
+        OUT_PATH_RUST_SOURCE / "config.toml",
         llvm_cflags=lto_flag,
         llvm_cxxflags=lto_flag,
         llvm_ldflags=host_linker_flags,
