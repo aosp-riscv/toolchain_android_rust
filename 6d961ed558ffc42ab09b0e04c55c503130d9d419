@@ -555,6 +555,30 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "fa19187e_814cf1b1",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 1043845
+      },
+      "writtenOn": "2021-11-09T20:43:20Z",
+      "side": 1,
+      "message": "When there\u0027s a short and long argument, the long argument is the dest. When there are multiple long arguments, I think the explicit dest is the right call.",
+      "parentUuid": "cba70c3e_69af5647",
+      "range": {
+        "startLine": 136,
+        "startChar": 42,
+        "endLine": 136,
+        "endChar": 55
+      },
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "0f78d968_0c70822e",
         "filename": "update_prebuilts.py",
         "patchSetId": 5
