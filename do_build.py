@@ -28,6 +28,7 @@ import sys
 import build_platform
 import config
 from paths import *
+from utils import run_and_exit_on_failure, run_quiet, run_quiet_and_exit_on_failure
 
 
 STDLIB_SOURCES = [
@@ -119,28 +120,33 @@ def main() -> None:
     # Call is not checked because this is *expected* to fail - there isn't a
     # user facing way to directly trigger the bootstrap, so we give it a
     # no-op to perform that will require it to write out the cargo config.
-    subprocess.call([PYTHON_PATH, OUT_PATH_RUST_SOURCE / "x.py", "--help"],
-                    cwd=OUT_PATH_RUST_SOURCE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    run_quiet([PYTHON_PATH, OUT_PATH_RUST_SOURCE / "x.py", "--help"], cwd=OUT_PATH_RUST_SOURCE)
 
     # Offline fetch to regenerate lockfile
     #
     # Because some patches may have touched vendored source we will rebuild
     # Cargo.lock
-    subprocess.check_output(
+    run_and_exit_on_failure(
         [CARGO_PATH, "fetch", "--offline"],
+        "Failed to rebuilt Cargo.lock via cargo-fetch operation",
         cwd=OUT_PATH_RUST_SOURCE, env=env)
 
     #
     # Build
     #
-    ec = subprocess.Popen([PYTHON_PATH, OUT_PATH_RUST_SOURCE / "x.py",
-                          "--stage", "3", "install"], cwd=OUT_PATH_RUST_SOURCE, env=env).wait()
-    if ec != 0:
-        print("Build stage failed with error {}".format(ec))
+
+    result = subprocess.run(
+        [PYTHON_PATH, OUT_PATH_RUST_SOURCE / "x.py", "--stage", "3", "install"],
+        cwd=OUT_PATH_RUST_SOURCE, env=env)
+
+    if result.returncode != 0:
+        print(f"Build stage failed with error {result.returncode}")
         tarball_path = DIST_PATH / "llvm-build-config.tar.gz"
-        subprocess.check_call(["tar", "czf", tarball_path] + LLVM_BUILD_PATHS_OF_INTEREST,
+        run_quiet_and_exit_on_failure(
+            ["tar", "czf", tarball_path.as_posix()] + LLVM_BUILD_PATHS_OF_INTEREST,
+            "Could not generate logs/artifacts archive upon build failure",
             cwd=LLVM_BUILD_PATH)
-        sys.exit(ec)
+        sys.exit(result.returncode)
 
     # Install sources
     if build_platform.is_linux():
@@ -155,11 +161,14 @@ def main() -> None:
     # We don't attempt to strip anything under rustlib/ since these include
     # both debug symbols which we may want to link into user code and Rust
     # metadata needed at build time.
-    libs = list((OUT_PATH_PACKAGE / "lib").glob("*.so"))
-    subprocess.check_call(["strip", "-S"] + libs + [
-        OUT_PATH_PACKAGE / "bin" / "rustc",
-        OUT_PATH_PACKAGE / "bin" / "cargo",
-        OUT_PATH_PACKAGE / "bin" / "rustdoc"])
+    binaries = [path.as_posix() for path in list(
+            (OUT_PATH_PACKAGE / "lib").glob("*.so")) + [
+            OUT_PATH_PACKAGE / "bin" / "rustc",
+            OUT_PATH_PACKAGE / "bin" / "cargo",
+            OUT_PATH_PACKAGE / "bin" / "rustdoc"]]
+    run_quiet_and_exit_on_failure(
+        ["strip", "-S"] + binaries,
+        "Failed to strip debugging info from generated binaries")
 
     # Install the libc++ library to out/package/lib64/
     if build_platform.is_darwin():

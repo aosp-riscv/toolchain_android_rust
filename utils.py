@@ -48,8 +48,12 @@ def version_string_type(arg_string: str) -> str:
 # Subprocess helpers
 #
 
-def prepare_command(command: str) -> list[str]:
-    command_list: list[str] = shlex.split(command)
+def prepare_command(command: Union[str, list[Any]]) -> list[str]:
+    if isinstance(command, list):
+        command_list: list[str] = [str(obj) for obj in command]
+    else:
+        command_list = shlex.split(command)
+
     if not Path(command_list[0]).exists():
         resolved_executable = shutil.which(command_list[0])
         if resolved_executable:
@@ -60,7 +64,7 @@ def prepare_command(command: str) -> list[str]:
     return command_list
 
 
-def run_and_exit_on_failure(command: str, error_message: str, *args: Any, **kwargs: Any) -> subprocess.CompletedProcess[str]:
+def run_and_exit_on_failure(command: Union[str, list[Any]], error_message: str, *args: Any, **kwargs: Any) -> subprocess.CompletedProcess[str]:
     """Runs a command where failure is a valid outcome"""
     result = subprocess.run(prepare_command(command), *args, **kwargs)
     if result.returncode != 0:
@@ -69,12 +73,12 @@ def run_and_exit_on_failure(command: str, error_message: str, *args: Any, **kwar
     return result
 
 
-def run_quiet_and_exit_on_failure(command: str, error_message: str, *args: Any, **kwargs: Any) -> int:
+def run_quiet_and_exit_on_failure(command: Union[str, list[Any]], error_message: str, *args: Any, **kwargs: Any) -> int:
     """Runs a failable command with stdout and stderr directed to /dev/null"""
     return run_and_exit_on_failure(command, error_message, *args, **(kwargs | SUBPROCESS_RUN_QUIET_DEFAULTS)).returncode
 
 
-def run_quiet(command: str, *args: Any, **kwargs: Any) -> int:
+def run_quiet(command: Union[str, list[Any]], *args: Any, **kwargs: Any) -> int:
     return subprocess.run(prepare_command(command), *args, **(kwargs | SUBPROCESS_RUN_QUIET_DEFAULTS)).returncode
 
 #

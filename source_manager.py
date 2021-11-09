@@ -23,9 +23,10 @@ import subprocess
 import sys
 
 import build_platform
+from utils import prepare_command, run_quiet_and_exit_on_failure, run_quiet
 
 def apply_patches(code_dir: Path, patch_dir: Path, no_patch_abort: bool = False) -> None:
-    patch_list    = sorted(patch_dir.glob('rustc-*'))
+    patch_list    = sorted(patch_dir.glob("rustc-*"))
     count_padding = len(str(len(patch_list)))
 
     for idx, filepath in enumerate(patch_list):
@@ -33,21 +34,17 @@ def apply_patches(code_dir: Path, patch_dir: Path, no_patch_abort: bool = False)
                 cur=(idx + 1), width=count_padding, total=len(patch_list), name=filepath.name),
             end="")
 
-        with filepath.open(mode='rb') as file:
-            p = subprocess.Popen(['patch', '-p1', '-N', '-r', '-'],
-                                 cwd=code_dir, stdin=subprocess.PIPE,
-                                 stdout=subprocess.PIPE)
-            out, _ = p.communicate(file.read())
+        command_list: list[str] = prepare_command(f"patch -p1 -N -r -i {filepath}")
+        result = subprocess.run(command_list, cwd=code_dir, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
-            if p.returncode != 0 and not no_patch_abort:
-                print("\nBuild failed when applying patch {}"
-                        .format(filepath.as_posix()))
-                print("If developing locally, try the --no-patch-abort flag")
-                print("\nOutput:")
-                print(out.decode('UTF-8'))
-                print()
+        if result.returncode != 0 and not no_patch_abort:
+            print(f"\nBuild failed when applying patch {filepath}")
+            print("If developing locally, try the --no-patch-abort flag")
+            print("\nOutput:")
+            print(result.stdout.decode('UTF-8'))
+            print()
 
-                sys.exit(p.returncode)
+            sys.exit(result.returncode)
 
     # If all patches applied cleanly we need to advance to the next line in the
     # terminal
@@ -72,7 +69,7 @@ def setup_files(input_dir: Path, output_dir: Path, patches_dir: Path, no_patch_a
     if not tmp_output_dir.parent.exists():
         tmp_output_dir.parent.mkdir(parents=True)
 
-    print('Creating copy of Rust source')
+    print("Creating copy of Rust source")
 
     # Use 'cp' instead of shutil.copytree.  The latter uses copystat and retains
     # timestamps from the source.  We instead use rsync below to only update
@@ -80,14 +77,15 @@ def setup_files(input_dir: Path, output_dir: Path, patches_dir: Path, no_patch_a
     # get a newer timestamp than files in $source_dir.
     #
     # Note: Darwin builds don't copy symlinks with -r.  Use -R instead.
-    reflink = '--reflink=auto' if build_platform.is_linux() else '-c'
+    command_template = f"cp -Rf %s {input_dir} {tmp_output_dir}"
+    reflink          = '--reflink=auto' if build_platform.is_linux() else '-c'
     try:
-      cmd = ['cp', '-Rf', reflink, input_dir, tmp_output_dir]
-      subprocess.check_call(cmd)
+        run_quiet(command_template % reflink, check=True)
     except subprocess.CalledProcessError:
-      # Fallback to normal copy.
-      cmd = ['cp', '-Rf', input_dir, tmp_output_dir]
-      subprocess.check_call(cmd)
+        # Fallback to normal copy.
+        run_quiet_and_exit_on_failure(
+            command_template % "",
+            f"Failed to copy source to temporary output path {tmp_output_dir}")
 
     # Patch source tree
     apply_patches(tmp_output_dir, patches_dir, no_patch_abort=no_patch_abort)
@@ -101,13 +99,14 @@ def setup_files(input_dir: Path, output_dir: Path, patches_dir: Path, no_patch_a
         print('Synchronizing temporary directory with existing output directory')
         # Without a trailing '/' in $SRC, rsync copies $SRC to
         # $DST/BASENAME($SRC) instead of $DST.
-        tmp_output_dir_str = str(tmp_output_dir) + '/'
+        tmp_output_dir_w_trailing_slash = str(tmp_output_dir) + '/'
 
         # rsync to update only changed files.  Use '-c' to use checksums to find
         # if files have changed instead of only modification time and size -
         # which could have inconsistencies.  Use '--delete' to ensure files not
         # in tmp_source_dir are deleted from $source_dir.
-        subprocess.check_call(['rsync', '-r', '--delete', '--links', '-c',
-                               tmp_output_dir_str, output_dir])
+        run_quiet_and_exit_on_failure(
+            f"rsync -r --delete --links -c {tmp_output_dir_w_trailing_slash} {output_dir}",
+            f"Failed to synchronize temporary ({tmp_output_dir}) and persistant ({output_dir}) output directories")
 
         shutil.rmtree(tmp_output_dir)
