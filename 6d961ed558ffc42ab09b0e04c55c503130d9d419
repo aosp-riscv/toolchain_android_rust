@@ -88,6 +88,24 @@
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "5c3c626d_756e9154",
+        "filename": "update_prebuilts.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-11-09T01:52:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "145e0f2d_b02ee193",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "c183a224_94ba1fcc",
@@ -1117,6 +1135,24 @@
       "side": 1,
       "message": "For these use cases the file is already open as we needed to read from it first.  It seems like this is a slightly better solution for that as we don\u0027t need to re-open the file.  Thoughts?\n\nThanks for the `Path.write_text()` pointer though.  I was looking for that.",
       "parentUuid": "e163f1f4_52c278ef",
+      "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "11cf9944_fb996f36",
+        "filename": "utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-11-09T01:52:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a6bd38f2_20e51555",
       "revId": "6d961ed558ffc42ab09b0e04c55c503130d9d419",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
