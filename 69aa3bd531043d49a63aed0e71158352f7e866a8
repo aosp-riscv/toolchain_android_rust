@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "b29b0c34_4f0dcafb",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-11-11T23:35:35Z",
+      "side": 1,
+      "message": "The file here has the same patch number as the file in the related CL.",
+      "revId": "69aa3bd531043d49a63aed0e71158352f7e866a8",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
