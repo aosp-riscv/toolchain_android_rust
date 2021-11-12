@@ -102,7 +102,8 @@ def fetch_and_extract_archive(build_type: str, rust_version: str) -> None:
     utils.run_and_exit_on_failure(
         COMMAND_FETCH % archive_url,
         "Error fetching source for Rust version %s" % rust_version,
-        cwd=RUST_SOURCE_PATH)
+        cwd=RUST_SOURCE_PATH,
+        shell=True)
     # Add newline padding to the output
     print()
     RUST_REPO.add('.')
