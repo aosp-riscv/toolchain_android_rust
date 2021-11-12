@@ -66,7 +66,8 @@ def prepare_command(command: Union[str, list[Any]]) -> list[str]:
 
 def run_and_exit_on_failure(command: Union[str, list[Any]], error_message: str, *args: Any, **kwargs: Any) -> subprocess.CompletedProcess[str]:
     """Runs a command where failure is a valid outcome"""
-    result = subprocess.run(prepare_command(command), *args, **kwargs)
+    command = prepare_command(command) if not kwargs.get("shell") else command
+    result  = subprocess.run(command, *args, **kwargs)
     if result.returncode != 0:
         sys.exit(error_message)
 

@@ -99,10 +99,12 @@ def clean_repository() -> None:
 def fetch_and_extract_archive(build_type: str, rust_version: str) -> None:
     archive_url = construct_archive_url(build_type, rust_version)
     print("Fetching archive %s\n" % archive_url)
+    print(f"Command: {COMMAND_FETCH % archive_url}")
     utils.run_and_exit_on_failure(
         COMMAND_FETCH % archive_url,
         "Error fetching source for Rust version %s" % rust_version,
-        cwd=RUST_SOURCE_PATH)
+        cwd=RUST_SOURCE_PATH,
+        shell=True)
     # Add newline padding to the output
     print()
     RUST_REPO.add('.')
