@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0a336867_74f7d999",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1416371
+      },
+      "writtenOn": "2021-11-12T23:27:18Z",
+      "side": 1,
+      "message": "It might be good in the long term to avoid the use of `shell \u003d True` at all by either using intermediate files or using two subprocess commands with pipe, but this is definitely fine for now.",
+      "revId": "4069f6c1bfe13861cfdb68fff845daaf2e37c4e6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
