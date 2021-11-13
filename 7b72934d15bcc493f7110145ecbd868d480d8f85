@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3e2ad7f1_d5535572",
+        "filename": "source_manager.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-11-13T05:30:49Z",
+      "side": 0,
+      "message": "This was necessary to drop the rejects, and it didn\u0027t get ported over in the new arguments. It doesn\u0027t mean \"read from stdin\" like many other GNU commands. Working on a fix.",
+      "range": {
+        "startLine": 37,
+        "startChar": 62,
+        "endLine": 37,
+        "endChar": 65
+      },
+      "revId": "7b72934d15bcc493f7110145ecbd868d480d8f85",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
