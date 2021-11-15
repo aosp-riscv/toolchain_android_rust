@@ -34,14 +34,16 @@ def apply_patches(code_dir: Path, patch_dir: Path, no_patch_abort: bool = False)
                 cur=(idx + 1), width=count_padding, total=len(patch_list), name=filepath.name),
             end="")
 
-        command_list: list[str] = prepare_command(f"patch -p1 -N -r -i {filepath}")
+        command_list: list[str] = prepare_command(f"patch -p1 -N -r - -i {filepath}")
         result = subprocess.run(command_list, cwd=code_dir, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        print("\nOutput (stdout):")
+        print(result.stdout.decode('UTF-8'))
 
         if result.returncode != 0 and not no_patch_abort:
             print(f"\nBuild failed when applying patch {filepath}")
             print("If developing locally, try the --no-patch-abort flag")
-            print("\nOutput:")
-            print(result.stdout.decode('UTF-8'))
+            print("\nOutput (stderr):")
+            print(result.stderr.decode('UTF-8'))
             print()
 
             sys.exit(result.returncode)
