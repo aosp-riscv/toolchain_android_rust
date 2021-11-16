@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1716b7e8_431c44ac",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-11-16T05:19:11Z",
+      "side": 1,
+      "message": "No, I intentionally have this printing because I think we want it in the logs to see how far a patch file may have drifted (and which ones might need to be refreshed based on the latest LLVM/Rust sources).",
+      "revId": "98cfbc2b1b9530344e714b4bcb5ea5830baaaafd",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
