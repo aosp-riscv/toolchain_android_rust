@@ -210,52 +210,6 @@ def unpack_prebuilt_artifacts(artifact_path_map: dict[str, Path], manifest_path:
         RUST_PREBUILT_REPO.add(target_and_version_path)
 
 
-def get_rlib_suffix(platform: str, version: str, arch: str) -> str:
-    """
-    Find the suffixes for the libstd rlib objects for a given platform
-    """
-
-    libdir_path: Path = RUST_PREBUILT_PATH / platform / version / "lib" / "rustlib" / arch / "lib"
-
-    for lib_path in libdir_path.iterdir():
-        match_data = RLIB_NAME_PATTERN.search(lib_path.name)
-        if match_data:
-            return match_data.group(1)
-
-    sys.exit(f"Unable to find standard library for {platform} / {version} / {arch}")
-
-
-def get_library_suffixes(version: str, is_local: bool) -> dict[str, dict[str, str]]:
-    """
-    Find the libstd suffixes for the targets and architectures we are updating
-    """
-
-    LIB_PATH_IDENTS: dict[str, list[str]] = {
-        "linux-x86": [
-            "x86_64-unknown-linux-gnu",
-            "i686-unknown-linux-gnu"
-        ],
-        "darwin-x86": [
-            "x86_64-apple-darwin"
-        ]
-    }
-
-    # If we are installing a local prebuilt artifact then other platforms won't
-    # have the correct paths present for the rlib suffix search.  To avoid
-    # looking for non-existant paths we prune the list of library paths to
-    # search to just the host platform's.
-    if is_local:
-        host_platform: str = build_platform.prebuilt()
-        selected_idents = {host_platform: LIB_PATH_IDENTS[host_platform]}
-    else:
-        selected_idents = LIB_PATH_IDENTS
-
-    return {
-        platform: {arch: get_rlib_suffix(platform, version, arch) for arch in suffix_list}
-            for platform, suffix_list in selected_idents.items()
-    }
-
-
 def update_root_build_file(version: str) -> None:
     """Update the Rust version number in the root Android.bp file"""
 
@@ -267,40 +221,9 @@ def update_root_build_file(version: str) -> None:
     RUST_PREBUILT_REPO.add(ROOT_BUILD_FILE_PATH)
 
 
-def update_platform_build_files(version: str, is_local: bool) -> None:
-    """
-    Update the library paths and suffixes in the Android.bp file for the
-    platforms that we are updating
-    """
-    for platform, arch_suffixes in get_library_suffixes(version, is_local).items():
-
-        platform_build_file_path = RUST_PREBUILT_PATH / platform / ANDROID_BP
-        with open(platform_build_file_path, "r+") as f:
-            file_contents = f.read()
-
-            # Update rust version
-            file_contents = re.sub(VERSION_PATTERN, version, file_contents)
-
-            # Update library suffixes
-            for arch, new_suffix in arch_suffixes.items():
-                match_data = re.search(f"{arch}\/lib\/{RLIB_NAME_PATTERN.pattern}", file_contents)
-
-                if match_data:
-                    file_contents = re.sub(match_data.group(1), new_suffix, file_contents)
-                else:
-                    sys.exit(f"Failed to extract old suffix value for {platform}/{arch}")
-
-            replace_file_contents(f, file_contents)
-
-        # Add the file to Git after we are sure it has been written to and
-        # closed.
-        RUST_PREBUILT_REPO.add(platform_build_file_path)
-
-
 def update_build_files(version: str, is_local: bool) -> None:
     print("Updating build files")
     update_root_build_file(version)
-    update_platform_build_files(version, is_local)
 
 
 def main() -> None:
