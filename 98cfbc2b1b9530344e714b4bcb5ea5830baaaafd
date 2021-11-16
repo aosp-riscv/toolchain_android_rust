@@ -16,6 +16,24 @@
       "message": "No, I intentionally have this printing because I think we want it in the logs to see how far a patch file may have drifted (and which ones might need to be refreshed based on the latest LLVM/Rust sources).",
       "revId": "98cfbc2b1b9530344e714b4bcb5ea5830baaaafd",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e42d955a_a4aba8a2",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1047255
+      },
+      "writtenOn": "2021-11-16T19:17:26Z",
+      "side": 1,
+      "message": "What is the use case you have in mind here?  I\u0027ve never updated a patch file unless it failed to apply and I don\u0027t believe that\u0027s part of any existing workflow.  This just seems to clutter up the output with un-actionable information, and I\u0027d prefer to not making an existing workflow worse to support a hypothetical task we aren\u0027t currently doing.\n\nIf we do want this information we should probably write it to a file (e.g. `patches.log`) as it will quickly get pushed off the top of the terminal by the rest of the build.",
+      "parentUuid": "1716b7e8_431c44ac",
+      "revId": "98cfbc2b1b9530344e714b4bcb5ea5830baaaafd",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
