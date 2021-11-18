@@ -34,6 +34,23 @@
       "parentUuid": "1716b7e8_431c44ac",
       "revId": "98cfbc2b1b9530344e714b4bcb5ea5830baaaafd",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "95c63c27_7690ed8c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-11-18T10:09:11Z",
+      "side": 1,
+      "message": "Chris and I chatted yesterday. We think there\u0027s a good solution for keeping the patch files up to date without spamming the build logs in weird locations (that might be where other errors appear too). Letting this change go in to reduce build spam in the meantime.",
+      "revId": "98cfbc2b1b9530344e714b4bcb5ea5830baaaafd",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
