@@ -16,6 +16,86 @@
       "message": "Didn\u0027t read the actual .md file, +2 is assuming it is a copypaste of the previous copy that wasn\u0027t in tree.",
       "revId": "991a334623a959b2c25ada8068e8be94e83b42a6",
       "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c4ee2bcf_7e4ce4b3",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-11-18T01:02:31Z",
+      "side": 1,
+      "message": "This part is wrong. It should be using the aosp version of this if we\u0027re sharing publicly.\n\nhttps://android.googlesource.com/platform/manifest is the proper location (no persistent-https either).",
+      "range": {
+        "startLine": 12,
+        "startChar": 34,
+        "endLine": 12,
+        "endChar": 61
+      },
+      "revId": "991a334623a959b2c25ada8068e8be94e83b42a6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "89b1c27d_0fa76f4b",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-11-18T01:02:31Z",
+      "side": 1,
+      "message": "It might be good to have an example of what you\u0027ve run for the previous case. This way, people can see how you actually use those arguments (i.e. \"56.1\" or \"1.56.1\" or ?). Just put it in a comment line below here, because obviously you don\u0027t want them to run that command too.",
+      "revId": "991a334623a959b2c25ada8068e8be94e83b42a6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "94b7ce98_13b75005",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 185,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-11-18T01:02:31Z",
+      "side": 1,
+      "message": "We may want to just drop this now. We probably would rather communicate on our mailing list in any case.",
+      "range": {
+        "startLine": 184,
+        "startChar": 54,
+        "endLine": 185,
+        "endChar": 55
+      },
+      "revId": "991a334623a959b2c25ada8068e8be94e83b42a6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c47302e2_b52a8739",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 196,
+      "author": {
+        "id": 1010056
+      },
+      "writtenOn": "2021-11-18T01:02:31Z",
+      "side": 1,
+      "message": "Add a newline at the end to make it easier to edit/add more.",
+      "revId": "991a334623a959b2c25ada8068e8be94e83b42a6",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
     }
   ]
 }
