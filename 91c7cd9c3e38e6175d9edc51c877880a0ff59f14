@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "27e7a402_f1c235ed",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1058860
+      },
+      "writtenOn": "2021-11-19T22:19:52Z",
+      "side": 1,
+      "message": "aosp/1897760 cherry-picks one of the patches involved.  I need to check if that by itself is enough to get memory-mapped coverage for Rust.  Either way, this patch needs to be rebased once aosp/1897760 merges.",
+      "revId": "91c7cd9c3e38e6175d9edc51c877880a0ff59f14",
+      "serverId": "85c56323-6fa9-3386-8a01-6480fb634889"
+    }
+  ]
+}
